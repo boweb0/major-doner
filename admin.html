@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Yönetim Paneli | Major Döner</title>
+<link rel="icon" href="assets/img/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+  /* Panel kendi sabit renklerini kullanır (--a-*). Sitenin marka renkleri yalnızca "Görünüm" önizlemesinde görünür. */
+  :root { --a-bg:#12110f; --a-panel:#1c1a17; --a-panel2:#25221d; --a-line:#3a352d; --a-text:#f1e9d8; --a-muted:#a79f8d; --a-gold:#e0b65c; --a-ok:#58c27d; --a-bad:#ef6b5b; --a-warn:#f2a51d; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--a-bg); color: var(--a-text); font: 400 16px/1.5 "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif; overflow-x: hidden; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  h1, h2, h3, p { margin: 0; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  a { color: var(--a-gold); }
+  :focus-visible { outline: 3px solid var(--a-warn); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+  .ic { flex: none; }
+
+  /* Giriş */
+  .login { min-height: 100vh; display: grid; place-items: center; padding: 24px 18px; }
+  .login form { width: 100%; max-width: 380px; background: var(--a-panel); border: 1px solid var(--a-line); border-radius: 14px; padding: 28px 24px; display: grid; gap: 16px; }
+  .login img { width: 84px; height: 84px; border-radius: 50%; border: 2px solid var(--a-gold); margin: 0 auto; object-fit: cover; }
+  .login h1 { font: 700 1.6rem/1.2 "Barlow Condensed", sans-serif; text-align: center; letter-spacing: .02em; }
+  .login .hint { text-align: center; color: var(--a-muted); font-size: .92rem; }
+
+  /* Ortak form */
+  label.f { display: grid; gap: 6px; font-weight: 500; font-size: .95rem; color: var(--a-muted); }
+  label.f > span { color: var(--a-text); }
+  input[type=text], input[type=password], input[type=number], input[type=date], input[type=url], input[type=search], select, textarea {
+    width: 100%; min-height: 46px; padding: 10px 12px; background: var(--a-bg); border: 1px solid var(--a-line); border-radius: 8px; color: var(--a-text); }
+  textarea { min-height: 110px; resize: vertical; line-height: 1.45; }
+  input:focus, select:focus, textarea:focus { border-color: var(--a-gold); outline: none; box-shadow: 0 0 0 3px rgba(224,182,92,.25); }
+  input[type=color] { width: 54px; height: 46px; padding: 3px; background: var(--a-bg); border: 1px solid var(--a-line); border-radius: 8px; cursor: pointer; }
+  .help { font-size: .88rem; color: var(--a-muted); font-weight: 400; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid var(--a-line); background: var(--a-panel2); color: var(--a-text); font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .btn:hover { border-color: var(--a-gold); }
+  .btn.primary { background: var(--a-gold); border-color: var(--a-gold); color: #1a1405; }
+  .btn.danger { color: var(--a-bad); border-color: color-mix(in srgb, var(--a-bad) 50%, var(--a-line)); }
+  .btn.danger.arm { background: var(--a-bad); color: #fff; border-color: var(--a-bad); }
+  .btn.sm { min-height: 36px; padding: 0 12px; font-size: .92rem; }
+  .btn.icon { width: 36px; min-height: 36px; padding: 0; }
+  .btn[disabled] { opacity: .4; pointer-events: none; }
+  .err { color: var(--a-bad); font-size: .92rem; min-height: 1.2em; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+  .row > * { flex: 1 1 180px; min-width: 0; }
+  .grid2 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+  .grid3 { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+  .switch { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; font-weight: 500; }
+  .switch input { width: 22px; height: 22px; accent-color: var(--a-gold); flex: none; }
+
+  /* Kabuk */
+  .shell { display: grid; min-height: 100vh; grid-template-columns: minmax(0, 1fr); }
+  .side { background: var(--a-panel); border-bottom: 1px solid var(--a-line); padding-top: env(safe-area-inset-top, 0px); position: sticky; top: 0; z-index: 20; }
+  .side-top { display: flex; align-items: center; gap: 12px; padding: 10px 16px; }
+  .side-top img { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--a-gold); object-fit: cover; }
+  .side-top b { font: 700 1.2rem/1 "Barlow Condensed", sans-serif; letter-spacing: .03em; }
+  .status { margin-left: auto; font-size: .9rem; color: var(--a-muted); display: flex; align-items: center; gap: 6px; }
+  .status.ok { color: var(--a-ok); } .status.bad { color: var(--a-bad); }
+  .tabs { display: flex; gap: 4px; overflow-x: auto; padding: 0 12px 10px; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { all: unset; cursor: pointer; padding: 9px 14px; border-radius: 8px; white-space: nowrap; font-weight: 600; color: var(--a-muted); min-height: 24px; }
+  .tabs button[aria-selected="true"] { background: var(--a-gold); color: #1a1405; }
+  .tabs button:focus-visible { outline: 3px solid var(--a-warn); }
+  .side-links { display: none; }
+  main.pane { padding: 20px 16px 80px; max-width: 920px; width: 100%; min-width: 0; }
+  .banner { background: color-mix(in srgb, var(--a-warn) 12%, var(--a-panel)); border: 1px solid color-mix(in srgb, var(--a-warn) 45%, var(--a-line)); border-radius: 10px; padding: 12px 14px; font-size: .94rem; margin-bottom: 18px; }
+  .card { background: var(--a-panel); border: 1px solid var(--a-line); border-radius: 12px; padding: 20px; margin-bottom: 18px; display: grid; gap: 16px; }
+  .card > h2 { font: 700 1.35rem/1.2 "Barlow Condensed", sans-serif; letter-spacing: .02em; }
+  .card > h2 + .help { margin-top: -10px; }
+  .pg-title { font: 700 1.9rem/1.1 "Barlow Condensed", sans-serif; margin-bottom: 16px; letter-spacing: .02em; }
+
+  /* Görsel yükleme */
+  .imgbox { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .imgbox .pv { width: 96px; height: 96px; border-radius: 10px; background: var(--a-bg); border: 1px solid var(--a-line); overflow: hidden; display: grid; place-items: center; color: var(--a-muted); font-size: .8rem; text-align: center; flex: none; }
+  .imgbox .pv img { width: 100%; height: 100%; object-fit: cover; }
+  .imgbox .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .file { position: relative; overflow: hidden; }
+  .file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+
+  /* Listeler */
+  .list { display: grid; gap: 10px; }
+  .li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; background: var(--a-panel2); border: 1px solid var(--a-line); border-radius: 10px; padding: 12px; }
+  .li.off { opacity: .6; }
+  .li .t { min-width: 0; }
+  .li .t b { display: block; font-size: 1.05rem; overflow-wrap: anywhere; }
+  .li .t small { color: var(--a-muted); }
+  .li .acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .chip { display: inline-block; font-size: .78rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--a-bg); border: 1px solid var(--a-line); color: var(--a-muted); margin-left: 6px; vertical-align: middle; }
+  .chip.on { color: var(--a-ok); border-color: color-mix(in srgb, var(--a-ok) 50%, var(--a-line)); }
+  .chip.sale { color: var(--a-warn); border-color: color-mix(in srgb, var(--a-warn) 55%, var(--a-line)); }
+  .chip.bad { color: var(--a-bad); }
+  .catbar { display: flex; gap: 6px; flex-wrap: wrap; }
+  .catbar button { all: unset; cursor: pointer; padding: 8px 14px; border-radius: 99px; border: 1px solid var(--a-line); font-weight: 600; min-height: 24px; }
+  .catbar button[aria-pressed="true"] { background: var(--a-gold); color: #1a1405; border-color: var(--a-gold); }
+  .catbar button:focus-visible { outline: 3px solid var(--a-warn); }
+  .subcard { background: var(--a-panel2); border: 1px solid var(--a-line); border-radius: 10px; padding: 14px; display: grid; gap: 12px; }
+  .pick { display: grid; gap: 4px; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); max-height: 260px; overflow: auto; padding: 4px; border: 1px solid var(--a-line); border-radius: 8px; background: var(--a-bg); }
+  .pick label { display: flex; gap: 8px; align-items: center; padding: 6px 8px; cursor: pointer; border-radius: 6px; }
+  .pick input { accent-color: var(--a-gold); width: 18px; height: 18px; }
+
+  /* Önizleme (sitenin marka değişkenlerini kullanır) */
+  .brandpv { --pv-bg: var(--bg); background: var(--bg); color: var(--text); border: 1px solid var(--a-line); border-radius: 12px; padding: 20px; display: grid; gap: 14px; }
+  .brandpv .brush { justify-self: start; background: var(--accent2); color: #17130b; font: var(--f-display-w) 1.4rem/1.1 var(--f-display); padding: 7px 24px 8px 16px; transform: rotate(-1.5deg); clip-path: polygon(0 14%,2% 2%,55% 0,100% 8%,98% 34%,100% 70%,96% 100%,40% 96%,3% 100%,0 76%); }
+  .brandpv .it { background: var(--surface); border: 1px solid color-mix(in srgb, var(--text) 16%, transparent); border-radius: 10px; padding: 14px; }
+  .brandpv .it b { font: 700 1.3rem/1.1 var(--f-cond); }
+  .brandpv .it p { color: color-mix(in srgb, var(--text) 64%, var(--bg)); font-family: var(--f-body); font-size: .95rem; }
+  .brandpv .pr { color: var(--accent); font: 700 1.4rem var(--f-cond); }
+  .brandpv .script { font: 400 2rem/1 var(--f-script); color: var(--accent2); }
+  .brandpv .b1 { justify-self: start; background: var(--accent); color: #17130b; border-radius: 99px; padding: 11px 24px; font: 700 1.1rem var(--f-cond); }
+
+  /* Modal */
+  .modal { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.7); display: grid; align-items: start; justify-items: center; overflow-y: auto; padding: 16px 12px calc(40px + env(safe-area-inset-bottom, 0px)); }
+  .modal .box { width: 100%; max-width: 640px; background: var(--a-panel); border: 1px solid var(--a-line); border-radius: 14px; margin-top: calc(env(safe-area-inset-top, 0px) + 8px); }
+  .modal header { display: flex; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid var(--a-line); position: sticky; top: 0; background: var(--a-panel); border-radius: 14px 14px 0 0; z-index: 2; }
+  .modal header h2 { font: 700 1.35rem/1.2 "Barlow Condensed", sans-serif; flex: 1; }
+  .modal .body { padding: 20px; display: grid; gap: 16px; }
+  .modal footer { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 20px; border-top: 1px solid var(--a-line); flex-wrap: wrap; position: sticky; bottom: 0; background: var(--a-panel); border-radius: 0 0 14px 14px; }
+
+  .qrbox { background: #fff; padding: 16px; border-radius: 12px; justify-self: start; }
+  .qrbox canvas { display: block; width: min(300px, 70vw); height: auto; image-rendering: pixelated; }
+.salepv { display: flex; flex-wrap: wrap; gap: 8px; }
+  .salepv span { padding: 6px 12px; border-radius: 8px; background: rgba(0,0,0,.2); font-size: 1.05rem; }
+  .salepv s { opacity: .65; margin-right: 4px; } .salepv b { color: var(--a-accent, #f2a51d); }
+  .savebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: #26231d; border-top: 1px solid rgba(255,255,255,.14); color: var(--a-muted); font-size: .95rem; }
+  .savebar.dirty { background: #4a3300; color: #fff; border-top-color: #f2a51d; }
+  .savebar .btn { min-width: 130px; min-height: 46px; font-weight: 700; }
+  .savebar .btn:disabled { opacity: .45; cursor: default; }
+  body { padding-bottom: 76px; }
+  .toast { bottom: calc(86px + env(safe-area-inset-bottom, 0px)) !important; }
+  .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--a-text); color: #1a1405; padding: 11px 18px; border-radius: 99px; font-weight: 600; z-index: 80; box-shadow: 0 10px 30px rgba(0,0,0,.5); max-width: 92vw; }
+
+  @media (max-width: 640px) { .li { grid-template-columns: minmax(0, 1fr); } .li .acts { justify-content: flex-start; } .card { padding: 16px; } }
+  @media (min-width: 900px) {
+    .shell { grid-template-columns: 240px minmax(0, 1fr); }
+    .side { position: sticky; top: 0; height: 100vh; border-right: 1px solid var(--a-line); border-bottom: 0; display: flex; flex-direction: column; overflow-y: auto; }
+    .side-top { padding: 20px 18px 8px; flex-wrap: wrap; }
+    .status { margin-left: 0; width: 100%; }
+    .tabs { flex-direction: column; padding: 12px; overflow: visible; }
+    .tabs button { padding: 12px 14px; }
+    .side-links { display: grid; gap: 8px; padding: 12px; margin-top: auto; }
+    main.pane { padding: 32px 36px 100px; }
+    .mob-links { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="login" id="login" hidden>
+  <form id="loginForm" autocomplete="off">
+    <img src="assets/img/logo-mark.jpg" alt="">
+    <h1>Yönetim Paneli</h1>
+    <label class="f"><span>Şifre</span><input type="password" id="pw" autocomplete="current-password" required autofocus></label>
+    <div class="err" id="loginErr" role="alert"></div>
+    <button class="btn primary" type="submit">Giriş yap</button>
+    <p class="hint" id="loginHint"></p>
+  </form>
+</div>
+
+<div class="shell" id="shell" hidden>
+  <div class="savebar" id="savebar" role="region" aria-label="Kaydet"><span id="saveMsg" aria-live="polite">Tüm değişiklikler kaydedildi</span><button class="btn primary" id="saveBtn" type="button" disabled>Kaydet</button></div>
+  <aside class="side">
+    <div class="side-top">
+      <img id="sLogo" src="assets/img/logo-mark.jpg" alt="">
+      <b id="sName">Major Döner</b>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Panel bölümleri"></nav>
+    <div class="side-links">
+      <a class="btn" href="index.html" target="_blank" rel="noopener">Siteyi aç</a>
+      <a class="btn" href="menu.html" target="_blank" rel="noopener">Menüyü aç</a>
+      <button class="btn" id="logout" type="button">Çıkış yap</button>
+    </div>
+  </aside>
+  <main class="pane" id="view"></main>
+</div>
+<div id="modalRoot"></div>
+<div id="toastRoot" aria-live="polite"></div>
+
+<script src="assets/core.js"></script>
+<script src="assets/qr.js"></script>
+<script>
+(function () {
+  'use strict';
+  var M = Major, $ = function (id) { return document.getElementById(id); };
+  var D = null, DRAFT = null, DRAFT_NEW = false, tab = 'genel', catSel = null, campEdit = null, armed = null, armTimer = null, saveTimer = null, qrUrlTouched = false;
+
+  var TABS = [
+    ['genel', 'Genel'], ['gorunum', 'Görünüm'], ['anasayfa', 'Ana sayfa'], ['menu', 'Menü ve ürünler'], ['kampanya', 'Kampanyalar'],
+    ['icerik', 'Hakkımızda ve galeri'], ['iletisim', 'İletişim ve konum'], ['qr', 'QR kod'], ['yedek', 'Yedek ve güvenlik']
+  ];
+  var KINDS = [['wrap', 'Dürüm'], ['menu', 'Menü (dürüm + patates + içecek)'], ['plate', 'Servis tabağı'], ['salad', 'Salata'], ['can', 'Kutu içecek'], ['cup', 'Bardak (ayran, şalgam)'], ['bottle', 'Şişe (soda, su)']];
+  var CAMP_TYPES = [['info', 'Sadece duyuru (fiyat değişmez)'], ['percent', 'Yüzde indirim'], ['amount', 'TL indirim']];
+
+  /* ---------- Küçük yardımcılar ---------- */
+  var esc = M.esc;
+  function root(p) { return p.indexOf('draft.') === 0 ? { draft: DRAFT } : D; }
+  function g(p) { return p.split('.').reduce(function (o, k) { return o == null ? o : o[k]; }, root(p)); }
+  function setv(p, v) { var ks = p.split('.'), o = root(p); for (var i = 0; i < ks.length - 1; i++) o = o[ks[i]]; o[ks[ks.length - 1]] = v; }
+  function val(p) { var v = g(p); return v == null ? '' : v; }
+  function toast(t) {
+    var el = document.createElement('div'); el.className = 'toast'; el.textContent = t; $('toastRoot').appendChild(el);
+    setTimeout(function () { el.remove(); }, 2600);
+  }
+  function inp(label, path, o) {
+    o = o || {};
+    var type = o.type || 'text';
+    var attrs = 'type="' + type + '" data-path="' + path + '" value="' + esc(val(path)) + '"' + (o.num ? ' data-num="1" inputmode="decimal"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.step ? ' step="' + o.step + '"' : '') + (o.min != null ? ' min="' + o.min + '"' : '');
+    return '<label class="f"><span>' + label + '</span><input ' + attrs + '>' + (o.help ? '<span class="help">' + o.help + '</span>' : '') + '</label>';
+  }
+  function area(label, path, o) {
+    o = o || {};
+    return '<label class="f"><span>' + label + '</span><textarea data-path="' + path + '"' + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + '>' + esc(val(path)) + '</textarea>' + (o.help ? '<span class="help">' + o.help + '</span>' : '') + '</label>';
+  }
+  function sw(label, path, rerender) {
+    return '<label class="switch"><input type="checkbox" data-path="' + path + '"' + (g(path) ? ' checked' : '') + (rerender ? ' data-rerender="1"' : '') + '><span>' + label + '</span></label>';
+  }
+  function sel(label, path, opts, rerender) {
+    return '<label class="f"><span>' + label + '</span><select data-path="' + path + '"' + (rerender ? ' data-rerender="1"' : '') + '>' + opts.map(function (o) {
+      return '<option value="' + esc(o[0]) + '"' + (String(g(path)) === String(o[0]) ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
+    }).join('') + '</select></label>';
+  }
+  function imgField(label, path, o) {
+    o = o || {}; var v = g(path);
+    return '<div class="f"><span style="color:var(--a-text);font-weight:500">' + label + '</span><div class="imgbox"><div class="pv">' + (v ? '<img src="' + esc(v) + '" alt="">' : 'Görsel yok') + '</div><div class="btns">' +
+      '<label class="btn sm file">Görsel seç<input type="file" accept="image/*" data-upload="' + path + '" data-max="' + (o.max || 1000) + '"></label>' +
+      (v && !o.noRemove ? '<button type="button" class="btn sm danger" data-act="clear-img" data-path="' + path + '">Kaldır</button>' : '') +
+      '</div></div>' + (o.help ? '<span class="help">' + o.help + '</span>' : '') + '</div>';
+  }
+  function ask(key) { // iki adımlı onay (tarayıcı confirm() penceresi açılmaz)
+    if (armed === key) { armed = null; return true; }
+    armed = key; clearTimeout(armTimer); armTimer = setTimeout(function () { armed = null; render(); }, 4000);
+    return false;
+  }
+  function delBtn(key, act, extra, label) {
+    var on = armed === key;
+    return '<button type="button" class="btn sm danger' + (on ? ' arm' : '') + '" data-act="' + act + '" ' + (extra || '') + ' data-key="' + key + '">' + (on ? 'Emin misin? Sil' : (label || 'Sil')) + '</button>';
+  }
+  function catOf(id) { return D.categories.filter(function (c) { return c.id === id; })[0]; }
+  function prodOf(id) { return D.products.filter(function (p) { return p.id === id; })[0]; }
+
+  /* ---------- Kaydetme ---------- */
+  function setStatus(t, cls) { var s = $('status'); s.textContent = t; s.className = 'status ' + (cls || ''); }
+  var dirty = false, saving = false;
+  function paintBar() {
+    var bar = $('savebar'); if (!bar) return;
+    bar.classList.toggle('dirty', dirty);
+    $('saveMsg').textContent = saving ? 'Kaydediliyor…' : dirty ? 'Kaydedilmemiş değişiklikler var' : 'Tüm değişiklikler kaydedildi';
+    $('saveBtn').disabled = saving || !dirty;
+    $('saveBtn').textContent = saving ? 'Kaydediliyor…' : 'Kaydet';
+  }
+  function commit() { dirty = true; setStatus('Kaydedilmedi', 'bad'); paintBar(); }   // değişiklik yalnızca Kaydet'e basınca siteye yazılır
+  function saveNow() {
+    if (saving || !dirty) return;
+    saving = true; paintBar();
+    M.save(D).then(function () {
+      dirty = false; saving = false; paintBar(); setStatus('Kaydedildi', 'ok');
+      toast('Kaydedildi. Değişiklikler siteye uygulandı.');
+    }).catch(function (e) {
+      saving = false; paintBar();
+      if (e && e.auth) { M.setToken(null); showLogin('Oturum süresi doldu. Tekrar giriş yapın. Kaydedilmemiş değişiklikler kaybolabilir.'); return; }
+      setStatus('Kaydedilemedi', 'bad'); toast((e && e.message) || 'Kaydedilemedi. Tekrar deneyin.');
+    });
+  }
+  addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+  addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && $('savebar')) { e.preventDefault(); saveNow(); } });
+
+  /* ---------- Sekmeler ---------- */
+  function T_genel() {
+    return '<h1 class="pg-title">Genel</h1>' +
+      '<div class="card"><h2>İşletme</h2>' + '<div class="grid2">' + inp('Site adı', 'settings.siteName') + inp('Kısa slogan (logo altı, alt bilgi)', 'settings.tagline') + '</div>' +
+      '<div class="grid2">' + inp('Ana sayfa sloganı (el yazısı)', 'settings.slogan') + '</div>' +
+      area('Ana sayfa kısa metni', 'settings.heroText') + '</div>' +
+      '<div class="card"><h2>Logo ve görseller</h2>' +
+      imgField('Logo rozeti (yuvarlak, üst çubukta ve sekme simgesinde)', 'settings.logo', { max: 400, help: 'Kare görsel en iyisidir.' }) +
+      imgField('Ana sayfa büyük görsel (logo plakası)', 'settings.heroImage', { max: 1400, noRemove: true }) + '</div>' +
+      '<div class="card"><h2>Duyuru şeridi</h2><p class="help">Sitenin en üstünde altın renkli şerit olarak görünür.</p>' +
+      sw('Duyuru şeridini göster', 'settings.announcement.on') + inp('Duyuru metni', 'settings.announcement.text', { ph: 'Örn. Bu hafta tüm menülerde 50 ₺ indirim' }) + '</div>' +
+      '<div class="card"><h2>Menü sayfası</h2>' + inp('Menü başlığının altındaki not', 'settings.menuNote') + '</div>';
+  }
+
+  function T_gorunum() {
+    var c = D.settings.colors;
+    function col(label, k) {
+      return '<div class="f"><span style="color:var(--a-text);font-weight:500">' + label + '</span><div style="display:flex;gap:8px"><input type="color" data-path="settings.colors.' + k + '" value="' + esc(c[k]) + '" aria-label="' + label + '"><input type="text" data-path="settings.colors.' + k + '" value="' + esc(c[k]) + '" maxlength="7" style="font-family:monospace"></div></div>';
+    }
+    return '<h1 class="pg-title">Görünüm</h1>' +
+      '<div class="card"><h2>Renkler</h2><p class="help">Değişiklikler hem siteye hem menüye uygulanır. Yazı rengi ile arka plan arasında yeterli fark bırakın.</p>' +
+      '<div class="grid2">' + col('Arka plan', 'bg') + col('Kart ve yüzey', 'surface') + col('Yazı', 'text') + col('Ana vurgu (altın)', 'accent') + col('İkinci vurgu (kategori başlıkları, kampanya)', 'accent2') + '</div>' +
+      '<div><button class="btn sm" data-act="reset-colors" type="button">Logo renklerine dön</button></div></div>' +
+      '<div class="card"><h2>Yazı tipi</h2>' + sel('Yazı stili', 'settings.fontPreset', Object.keys(M.FONT_PRESETS).map(function (k) { return [k, M.FONT_PRESETS[k].name]; })) + '</div>' +
+      '<div class="card"><h2>Önizleme</h2><div class="brandpv"><div class="script">' + esc(D.settings.slogan) + '</div><h3 class="brush">Dürümler</h3><div class="it"><b>Major Classic</b><p>Tavuk, patates, Major mayonez, sos</p><div class="pr">250 ₺</div></div><div class="b1">Menüyü Gör</div></div></div>';
+  }
+
+  function T_anasayfa() {
+    var ct = D.content, hint = '<span class="help">Vurgulamak için kelimeyi *yıldız* içine alın (örn. Boyunu *sen* seç).</span>';
+    function toggle(path, label) { return sw(label, path, true); }
+    var h = '<h1 class="pg-title">Ana sayfa</h1>';
+    h += '<div class="card"><h2>Açılış bölümü</h2>' +
+      sel('Sağdaki görsel', 'content.heroVisual', [['doner', 'Dönen döner (animasyon)'], ['image', 'Logo / büyük görsel'], ['none', 'Görsel yok']]) +
+      inp('Menü düğmesi yazısı', 'content.menuButton', { ph: 'Menüyü Gör', help: 'Sitedeki “Menüyü Gör” düğmelerinin hepsinde görünür.' }) +
+      '<p class="help">Logo, site adı, slogan ve açılış metni “Genel” sekmesindedir.</p></div>';
+    h += '<div class="card"><h2>Kayan şerit</h2><p class="help">Açılış bölümünün altındaki turuncu şeritte dönen kelimeler. Hepsini silerseniz şerit görünmez.</p><div class="list">' +
+      (ct.marquee || []).map(function (m, i) { return '<div class="subcard"><div class="row">' + inp('Yazı', 'content.marquee.' + i) + '</div><div>' + delBtn('mq' + i, 'mq-del', 'data-i="' + i + '"') + '</div></div>'; }).join('') +
+      '</div><div><button class="btn" data-act="mq-add" type="button">+ Kelime ekle</button></div></div>';
+    h += '<div class="card"><h2>Boy seçici</h2>' + toggle('content.size.show', 'Bu bölüm görünsün') + inp('Başlık', 'content.size.title') + hint + area('Açıklama', 'content.size.text') + inp('Düğme yazısı', 'content.size.button') + '</div>';
+    h += '<div class="card"><h2>Ana sayfadaki kampanya bölümü</h2>' + toggle('content.campaigns.show', 'Bu bölüm görünsün') + inp('Bölüm başlığı', 'content.campaigns.title') + '<p class="help">Kampanyaları “Kampanyalar” sekmesinden eklersiniz. Sitede yalnızca kampanya kartı görünür, ürün listesi görünmez.</p></div>';
+    h += '<div class="card"><h2>3 adımla sipariş</h2>' + toggle('content.steps.show', 'Bu bölüm görünsün') + inp('Başlık', 'content.steps.title') + hint + '<div class="list">' +
+      (ct.steps.items || []).map(function (x, i) {
+        return '<div class="subcard"><b>' + (i + 1) + '. adım</b>' + inp('Başlık', 'content.steps.items.' + i + '.t') + area('Açıklama', 'content.steps.items.' + i + '.d') +
+          '<div class="row"><button class="btn sm" data-act="step-up" data-i="' + i + '" type="button">Yukarı</button><button class="btn sm" data-act="step-down" data-i="' + i + '" type="button">Aşağı</button>' + delBtn('st' + i, 'step-del', 'data-i="' + i + '"') + '</div></div>';
+      }).join('') + '</div><div><button class="btn" data-act="step-add" type="button">+ Adım ekle</button></div></div>';
+    h += '<div class="card"><h2>Hakkımızda ve galeri</h2>' + toggle('content.aboutShow', 'Hakkımızda bölümü görünsün') + inp('Galeri başlığı', 'content.galleryTitle') + '<p class="help">Metinler ve fotoğraflar “Hakkımızda ve galeri” sekmesindedir.</p></div>';
+    h += '<div class="card"><h2>Menü çağrısı bölümü</h2>' + toggle('content.menuBand.show', 'Bu bölüm görünsün') + inp('Başlık', 'content.menuBand.title') + hint + area('Açıklama', 'content.menuBand.text') + inp('Düğme yazısı', 'content.menuBand.button') + '</div>';
+    h += '<div class="card"><h2>İletişim ve alt bilgi</h2>' + inp('İletişim başlığı', 'content.contactTitle') + inp('Alt bilgideki el yazısı', 'content.footerScript') + '</div>';
+    h += '<div class="card"><h2>Menü sayfası</h2>' + inp('Sayfa başlığı', 'content.menuTitle') + inp('Arama kutusu yazısı', 'content.searchPlaceholder') + '</div>';
+    return h;
+  }
+
+  function T_menu() {
+    if (!catSel || !catOf(catSel)) catSel = D.categories[0] ? D.categories[0].id : null;
+    var cat = catOf(catSel);
+    var ps = D.products.filter(function (p) { return p.cat === catSel; });
+    var html = '<h1 class="pg-title">Menü ve ürünler</h1>';
+
+    var catsHtml = '<div class="card"><h2>Kategoriler</h2><p class="help">Kategori adı, sırası, boy seçenekleri ve görünürlüğü burada ayarlanır.</p><div class="list">' + D.categories.map(function (c, i) {
+      var n = D.products.filter(function (p) { return p.cat === c.id; }).length;
+      return '<div class="subcard"><div class="row">' + inp('Kategori adı', 'categories.' + i + '.name') + inp('Kısa not (başlığın altında)', 'categories.' + i + '.note') + '</div>' +
+        '<div class="row" style="align-items:center">' + sw('Menüde göster', 'categories.' + i + '.visible') + '<label class="switch"><input type="checkbox" data-path="categories.' + i + '.hasSizes"' + (c.sizes && c.sizes.length ? ' checked' : '') + '><span>Boy seçenekleri var (Küçük / Orta / Büyük)</span></label></div>' +
+        (c.sizes && c.sizes.length ? '<div class="grid3">' + c.sizes.map(function (s, j) { return inp('Boy ' + (j + 1), 'categories.' + i + '.sizes.' + j + '.label') + inp('Gramaj', 'categories.' + i + '.sizes.' + j + '.sub'); }).join('') + '</div>' : '') +
+        '<div class="acts" style="display:flex;gap:6px;flex-wrap:wrap"><span class="help" style="align-self:center;flex:1">' + n + ' ürün</span>' +
+        '<button class="btn sm icon" data-act="cat-up" data-i="' + i + '" aria-label="Yukarı taşı"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+        '<button class="btn sm icon" data-act="cat-down" data-i="' + i + '" aria-label="Aşağı taşı"' + (i === D.categories.length - 1 ? ' disabled' : '') + '>↓</button>' +
+        delBtn('cat' + c.id, 'cat-del', 'data-i="' + i + '"', n ? 'Sil (' + n + ' ürünle)' : 'Sil') + '</div></div>';
+    }).join('') + '</div><div><button class="btn" data-act="cat-add" type="button">+ Kategori ekle</button></div></div>';
+
+    html += '<div class="card"><h2>Ürünler</h2><div class="catbar" role="group" aria-label="Kategori seç">' + D.categories.map(function (c) {
+      return '<button type="button" data-act="cat-pick" data-id="' + c.id + '" aria-pressed="' + (c.id === catSel) + '">' + esc(c.name) + '</button>';
+    }).join('') + '</div>';
+    if (!cat) { html += '<p class="help">Önce bir kategori ekleyin.</p></div>' + catsHtml; return html; }
+    html += '<div class="list">' + (ps.length ? ps.map(function (p) { return prodRow(p, cat); }).join('') : '<p class="help">Bu kategoride ürün yok.</p>') + '</div>' +
+      '<div><button class="btn primary" data-act="prod-add" type="button">+ ' + esc(cat.name) + ' kategorisine ürün ekle</button></div></div>';
+
+    html += '<div class="card"><h2>Toplu fiyat güncelle</h2><p class="help">Normal fiyatları yüzde olarak artırır ya da azaltır. Kampanyalı fiyatlara dokunmaz.</p>' +
+      '<div class="row"><label class="f"><span>Kategori</span><select id="bulkCat"><option value="*">Tüm kategoriler</option>' + D.categories.map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Yüzde (örn. 10 artırır, -10 azaltır)</span><input type="number" id="bulkPct" value="10" step="1" inputmode="decimal"></label>' +
+      '<label class="f"><span>Yuvarla</span><select id="bulkRound"><option value="5">5 ₺ katlarına</option><option value="10">10 ₺ katlarına</option><option value="1">1 ₺ katlarına</option></select></label></div>' +
+      '<div>' + (armed === 'bulk' ? '<button class="btn primary" data-act="bulk">Emin misin? Uygula</button>' : '<button class="btn" data-act="bulk">Uygula</button>') + '</div></div>';
+    return html + catsHtml;
+  }
+
+  function priceText(p, cat) {
+    function f(v) { return v == null ? '–' : M.fmt(v); }
+    if (p.mode === 'single') return f(p.single) + (p.onSale && p.saleSingle != null ? ' → ' + f(p.saleSingle) : '');
+    return ['s', 'm', 'l'].map(function (k) { return f(p.prices[k]) + (p.onSale && p.sale[k] != null ? '→' + f(p.sale[k]) : ''); }).join(' / ');
+  }
+  function prodRow(p, cat) {
+    var ps = D.products.filter(function (x) { return x.cat === p.cat; }), i = ps.indexOf(p);
+    var camp = M.priceFor(p, p.mode === 'single' ? 'single' : (['m', 's', 'l'].filter(function (k) { return p.prices[k] != null; })[0] || 's'), D);
+    return '<div class="li' + (p.visible ? '' : ' off') + '"><div class="t"><b>' + esc(p.name) +
+      (p.onSale ? '<span class="chip sale">Kampanyalı</span>' : (camp.old ? '<span class="chip sale">Kampanya</span>' : '')) +
+      (p.soldOut ? '<span class="chip bad">Tükendi</span>' : '') + (!p.visible ? '<span class="chip">Gizli</span>' : '') + '</b><small>' + priceText(p, cat) + '</small></div>' +
+      '<div class="acts"><button class="btn sm" data-act="prod-edit" data-id="' + p.id + '">Düzenle</button>' +
+      '<button class="btn sm icon" data-act="prod-up" data-id="' + p.id + '" aria-label="Yukarı taşı"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+      '<button class="btn sm icon" data-act="prod-down" data-id="' + p.id + '" aria-label="Aşağı taşı"' + (i === ps.length - 1 ? ' disabled' : '') + '>↓</button>' +
+      '<button class="btn sm" data-act="prod-copy" data-id="' + p.id + '">Kopyala</button>' +
+      delBtn('p' + p.id, 'prod-del', 'data-id="' + p.id + '"') + '</div></div>';
+  }
+
+  function productModal() {
+    var d = DRAFT, cat = catOf(d.cat) || D.categories[0], hasS = !!(cat.sizes && cat.sizes.length);
+    var h = '<div class="modal" role="dialog" aria-modal="true" aria-label="Ürün düzenle"><div class="box"><header><h2>' + (DRAFT_NEW ? 'Yeni ürün' : 'Ürünü düzenle') + '</h2><button class="btn sm" data-act="modal-close" type="button">Kapat</button></header><div class="body">';
+    h += inp('Ürün adı', 'draft.name') + area('İçindekiler / açıklama', 'draft.desc', { help: 'Kısa tutun, bir iki cümle.' });
+    h += '<div class="grid2">' + sel('Kategori', 'draft.cat', D.categories.map(function (c) { return [c.id, c.name]; }), true) +
+      (hasS ? sel('Fiyat türü', 'draft.mode', [['sizes', 'Boya göre fiyat'], ['single', 'Tek fiyat']], true) : '<div class="f"><span style="color:var(--a-text);font-weight:500">Fiyat türü</span><div class="help" style="padding-top:12px">Tek fiyat</div></div>') + '</div>';
+    if (d.mode === 'single' || !hasS) {
+      h += '<div class="grid2">' + inp('Fiyat (₺)', 'draft.single', { num: 1 }) + '</div>';
+    } else {
+      h += '<div class="grid3">' + cat.sizes.map(function (s) { return inp(esc(s.label) + (s.sub ? ' (' + esc(s.sub) + ')' : '') + ' ₺', 'draft.prices.' + s.k, { num: 1 }); }).join('') + '</div>' +
+        '<p class="help">Bir boyu satmıyorsanız boş bırakın.</p>';
+    }
+    h += '<div class="subcard">' + sw('Kampanyalı fiyat uygula', 'draft.onSale', true);
+    if (d.onSale) {
+      if (d.mode === 'single' || !hasS) h += '<div class="grid2">' + inp('Kampanyalı fiyat (₺)', 'draft.saleSingle', { num: 1 }) + '</div>';
+      else h += '<div class="grid3">' + cat.sizes.map(function (s) { return inp(esc(s.label) + ' kampanyalı ₺', 'draft.sale.' + s.k, { num: 1 }); }).join('') + '</div>';
+      var pv = d.mode === 'single' || !hasS ? [[d.single, d.saleSingle]] : cat.sizes.map(function (z) { return [(d.prices || {})[z.k], (d.sale || {})[z.k]]; });
+      h += inp('Rozet yazısı', 'draft.badge', { ph: 'Örn. İndirim, Fırsat' }) + '<div class="salepv" id="salePv" aria-live="polite">' + pv.filter(function (x) { return x[0] != null && x[1] != null && x[1] < x[0]; }).map(function (x) { return '<span><s>' + M.fmt(x[0]) + '</s> <b>' + M.fmt(x[1]) + '</b></span>'; }).join('') + '</div><p class="help">Normal fiyatı (örn. 300 ₺) girin, kampanyalı fiyatı (örn. 250 ₺) girin: menüde 300 ₺ çizili, 250 ₺ yeni fiyat olarak görünür.</p>';
+    } else h += inp('Rozet yazısı (isteğe bağlı)', 'draft.badge', { ph: 'Örn. Çok sevilen, Yeni' });
+    h += '</div>';
+    h += imgField('Ürün fotoğrafı', 'draft.img', { max: 700, help: 'Fotoğraf yoksa seçtiğiniz çizim görünür.' }) + sel('Fotoğraf yoksa çizim', 'draft.kind', KINDS);
+    h += '<div class="grid2">' + sw('Menüde görünsün', 'draft.visible') + sw('Tükendi olarak işaretle', 'draft.soldOut') + '</div><div class="err" id="pErr" role="alert"></div>';
+    h += '</div><footer><button class="btn" data-act="modal-close" type="button">Vazgeç</button><button class="btn primary" data-act="prod-save" type="button">Ürünü tamamla</button></footer></div></div>';
+    return h;
+  }
+
+  function campStatus(c) {
+    var t = M.today();
+    if (!c.active) return ['Kapalı', ''];
+    if (c.start && t < c.start) return ['Başlamadı', ''];
+    if (c.end && t > c.end) return ['Bitti', 'bad'];
+    return ['Yayında', 'on'];
+  }
+  function T_kampanya() {
+    var h = '<h1 class="pg-title">Kampanyalar</h1><div class="card"><h2>Kampanyalar</h2><p class="help">Yüzde veya TL indirim seçerseniz, seçtiğiniz ürünlerin fiyatı tarih aralığında otomatik düşer. Ürüne elle girilen kampanyalı fiyat önceliklidir.</p><div class="list">';
+    h += D.campaigns.length ? D.campaigns.map(function (c, i) {
+      var st = campStatus(c), open = campEdit === c.id;
+      var out = '<div class="li" style="grid-template-columns:1fr"><div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center"><div class="t"><b>' + esc(c.title || 'Adsız kampanya') + '<span class="chip ' + st[1] + '">' + st[0] + '</span></b><small>' +
+        esc((CAMP_TYPES.filter(function (t) { return t[0] === c.type; })[0] || [0, ''])[1]) + (c.type === 'percent' ? ' %' + c.value : c.type === 'amount' ? ' ' + c.value + ' ₺' : '') + ' · ' + (c.productIds || []).length + ' ürün</small></div>' +
+        '<div class="acts"><button class="btn sm" data-act="camp-toggle" data-id="' + c.id + '">' + (open ? 'Kapat' : 'Düzenle') + '</button>' + delBtn('c' + c.id, 'camp-del', 'data-i="' + i + '"') + '</div></div>';
+      if (open) {
+        out += '<div class="subcard" style="margin-top:12px">' + sw('Kampanya açık', 'campaigns.' + i + '.active') + inp('Kampanya adı', 'campaigns.' + i + '.title', { ph: 'Örn. Hafta sonu fırsatı' }) + area('Açıklama', 'campaigns.' + i + '.description') +
+          '<div class="grid2">' + sel('Kampanya türü', 'campaigns.' + i + '.type', CAMP_TYPES, true) + (c.type !== 'info' ? inp(c.type === 'percent' ? 'İndirim yüzdesi' : 'İndirim tutarı (₺)', 'campaigns.' + i + '.value', { num: 1 }) : '') + '</div>' +
+          '<div class="grid2">' + inp('Başlangıç tarihi', 'campaigns.' + i + '.start', { type: 'date' }) + inp('Bitiş tarihi', 'campaigns.' + i + '.end', { type: 'date' }) + '</div>' +
+          inp('Rozet yazısı', 'campaigns.' + i + '.badge', { ph: 'Örn. %10 indirim', help: 'İndirimli ürünün yanında görünür.' }) +
+          imgField('Kampanya fotoğrafı', 'campaigns.' + i + '.image', { max: 900, help: 'Ana sayfada ve menüdeki kampanya kartında görünür.' }) +
+          '<div class="grid2">' + inp('Kampanya fiyatı (₺)', 'campaigns.' + i + '.price', { num: 1, help: 'Doluysa kartta büyük yazılır ve WhatsApp’tan sipariş verilebilir.' }) + inp('Üstü çizili eski fiyat (₺)', 'campaigns.' + i + '.oldPrice', { num: 1, help: 'İsteğe bağlı. Örn. 300 yazarsanız 300 çizili, kampanya fiyatı yanında görünür.' }) + '</div>' +
+          '<div class="f"><span style="color:var(--a-text);font-weight:500">Kampanyalı ürünler</span><div class="pick">' + D.products.map(function (p) {
+            return '<label><input type="checkbox" data-campprod="' + i + '" value="' + p.id + '"' + ((c.productIds || []).indexOf(p.id) >= 0 ? ' checked' : '') + '>' + esc(p.name) + '</label>';
+          }).join('') + '</div></div></div>';
+      }
+      return out + '</div>';
+    }).join('') : '<p class="help">Henüz kampanya yok.</p>';
+    return h + '</div><div><button class="btn primary" data-act="camp-add" type="button">+ Kampanya ekle</button></div></div>';
+  }
+
+  function T_icerik() {
+    var a = D.about;
+    return '<h1 class="pg-title">Hakkımızda ve galeri</h1>' +
+      '<div class="card"><h2>Hakkımızda</h2>' + inp('Başlık', 'about.title') + area('Metin', 'about.text', { help: 'Boş satır bırakarak yeni paragraf açın.' }) + '</div>' +
+      '<div class="card"><h2>Öne çıkanlar</h2><div class="list">' + a.features.map(function (f, i) {
+        return '<div class="subcard"><div class="row">' + inp('Başlık', 'about.features.' + i + '.t') + inp('Açıklama', 'about.features.' + i + '.d') + '</div><div>' + delBtn('f' + i, 'feat-del', 'data-i="' + i + '"') + '</div></div>';
+      }).join('') + '</div><div><button class="btn" data-act="feat-add" type="button">+ Madde ekle</button></div></div>' +
+      '<div class="card"><h2>Fotoğraf galerisi</h2><p class="help">İşletmenizin, ürünlerinizin ve mekânın gerçek fotoğraflarını ekleyin. Ana sayfadaki “Fotoğraflar” bölümünde görünür.</p><div class="list">' +
+      a.gallery.map(function (x, i) {
+        return '<div class="subcard">' + imgField('Fotoğraf ' + (i + 1), 'about.gallery.' + i + '.src', { max: 1000, noRemove: true }) + inp('Açıklama (görme engelliler için)', 'about.gallery.' + i + '.alt') +
+          '<div class="acts" style="display:flex;gap:6px"><button class="btn sm icon" data-act="gal-up" data-i="' + i + '" aria-label="Yukarı"' + (i === 0 ? ' disabled' : '') + '>↑</button><button class="btn sm icon" data-act="gal-down" data-i="' + i + '" aria-label="Aşağı"' + (i === a.gallery.length - 1 ? ' disabled' : '') + '>↓</button>' + delBtn('g' + i, 'gal-del', 'data-i="' + i + '"') + '</div></div>';
+      }).join('') + '</div><div class="imgbox"><label class="btn file">+ Fotoğraf ekle<input type="file" accept="image/*" multiple data-gal="1"></label></div></div>';
+  }
+
+  function T_iletisim() {
+    var c = D.contact;
+    return '<h1 class="pg-title">İletişim ve konum</h1>' +
+      '<div class="card"><h2>Telefon ve WhatsApp</h2><div class="grid2">' + inp('Telefon', 'contact.phone', { ph: '05078172888', type: 'text' }) + inp('WhatsApp numarası', 'contact.whatsapp', { ph: '05078172888' }) + '</div>' +
+      inp('WhatsApp sipariş mesajı başlangıcı', 'contact.waGreeting', { help: 'Siparişte mesaj şöyle başlar: “' + esc(c.waGreeting) + '1 adet Major Classic (Orta 150 g) – 250 ₺ sipariş vermek istiyorum.”' }) + '</div>' +
+      '<div class="card"><h2>Adres ve harita</h2>' + area('Adres', 'contact.address') +
+      inp('Google Haritalar bağlantısı', 'contact.mapsLink', { type: 'url', ph: 'https://maps.app.goo.gl/…', help: 'Haritalar’da işletmeyi açın, Paylaş → Bağlantıyı kopyala. Boşsa adresten arama linki kullanılır.' }) +
+      inp('Harita gömme adresi (iframe src)', 'contact.mapsEmbed', { type: 'url', ph: 'https://www.google.com/maps/embed?pb=…', help: 'Haritalar’da Paylaş → Harita yerleştir → HTML’deki src="…" içindeki adresi yapıştırın. Yayındaki sitede harita kutusu olarak görünür.' }) + '</div>' +
+      '<div class="card"><h2>Çalışma saatleri</h2><div class="list">' + c.hours.map(function (hh, i) {
+        return '<div class="subcard"><div class="row">' + inp('Gün', 'contact.hours.' + i + '.d', { ph: 'Pazartesi – Cuma' }) + inp('Saat', 'contact.hours.' + i + '.h', { ph: '10:00 – 23:00' }) + '</div><div>' + delBtn('h' + i, 'hour-del', 'data-i="' + i + '"') + '</div></div>';
+      }).join('') + '</div><div><button class="btn" data-act="hour-add" type="button">+ Satır ekle</button></div><p class="help">Saat alanı boş olan satırlar sitede gösterilmez.</p></div>' +
+      '<div class="card"><h2>Sosyal medya</h2>' + inp('Instagram bağlantısı', 'contact.instagram', { type: 'url', ph: 'https://instagram.com/…' }) + '</div>';
+  }
+
+  function T_qr() {
+    var guess = location.href.replace(/admin\.html.*$/, 'menu.html').replace(/[#?].*$/, '');
+    if (!D.settings.menuUrl) D.settings.menuUrl = guess;
+    return '<h1 class="pg-title">QR kod</h1><div class="card"><h2>Menü QR kodu</h2><p class="help">QR kod müşteriyi doğrudan menü sayfasına götürür. Yazdırmadan önce adresin sitenizin gerçek adresi olduğundan emin olun.</p>' +
+      inp('Menü adresi', 'settings.menuUrl', { type: 'url' }) +
+      '<div class="qrbox" id="qrbox"><canvas id="qrCanvas" width="300" height="300" aria-label="Menü QR kodu"></canvas></div><div class="err" id="qrErr"></div>' +
+      '<div class="row" style="align-items:center"><button class="btn primary" data-act="qr-dl" type="button">PNG indir</button><button class="btn" data-act="qr-copy" type="button">Adresi kopyala</button></div>' +
+      '<p class="help">Masaya koymadan önce telefonla tarayıp deneyin. Koyu kod beyaz zemin üzerinde en iyi okunur.</p></div>';
+  }
+  function drawQr() {
+    var cv = $('qrCanvas'); if (!cv) return;
+    var url = D.settings.menuUrl || '';
+    $('qrErr').textContent = '';
+    try {
+      var q = new window.MajorQR(-1, window.MajorQR.ErrorCorrectLevel.M); q.addData(url); q.make();
+      var n = q.getModuleCount(), quiet = 4, scale = Math.max(4, Math.floor(1000 / (n + quiet * 2)));
+      var size = (n + quiet * 2) * scale; cv.width = size; cv.height = size;
+      var x = cv.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, size, size); x.fillStyle = '#111';
+      for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (q.isDark(r, c)) x.fillRect((c + quiet) * scale, (r + quiet) * scale, scale, scale);
+    } catch (e) { $('qrErr').textContent = 'QR oluşturulamadı. Adres boş ya da çok uzun olabilir.'; }
+  }
+
+  function T_yedek() {
+    var server = M.state.source === 'server';
+    return '<h1 class="pg-title">Yedek ve güvenlik</h1>' +
+      '<div class="card"><h2>Yedek al</h2><p class="help">Tüm menü, fiyat ve ayarları tek dosyada saklar.</p><div class="row" style="align-items:center"><button class="btn primary" data-act="export" type="button">Yedeği indir</button><button class="btn" data-act="export-copy" type="button">Yedeği panoya kopyala</button></div></div>' +
+      '<div class="card"><h2>Yedekten yükle</h2><p class="help">Yükleyince mevcut tüm veri değişir.</p><label class="btn file" style="justify-self:start">Yedek dosyası seç<input type="file" accept="application/json,.json" data-import="1"></label><div class="err" id="impErr" role="alert"></div></div>' +
+      '<div class="card"><h2>Şifre</h2>' + (server
+        ? '<div class="grid2"><label class="f"><span>Mevcut şifre</span><input type="password" id="pwOld" autocomplete="current-password"></label><label class="f"><span>Yeni şifre (en az 6 karakter)</span><input type="password" id="pwNew" autocomplete="new-password"></label></div><div class="err" id="pwErr" role="alert"></div><div><button class="btn" data-act="pw-change" type="button">Şifreyi değiştir</button></div>'
+        : '<p class="help">Önizleme modunda şifre sabittir. Gerçek sunucuda şifre, sunucunun ADMIN_PASSWORD ayarından belirlenir ve buradan değiştirilebilir.</p>') + '</div>' +
+      '<div class="card"><h2>Başlangıç verisine dön</h2><p class="help">Menü, fiyat ve ayarlar broşürdeki ilk haline döner. Bu işlem geri alınamaz, önce yedek alın.</p><div>' + delBtn('reset', 'reset-all', '', 'Her şeyi sıfırla') + '</div></div>';
+  }
+
+  var RENDER = { genel: T_genel, gorunum: T_gorunum, anasayfa: T_anasayfa, menu: T_menu, kampanya: T_kampanya, icerik: T_icerik, iletisim: T_iletisim, qr: T_qr, yedek: T_yedek };
+
+  function render(keepScroll) {
+    var y = window.scrollY;
+    $('tabs').innerHTML = TABS.map(function (t) { return '<button role="tab" type="button" data-tab="' + t[0] + '" aria-selected="' + (t[0] === tab) + '">' + t[1] + '</button>'; }).join('');
+    var banner = M.state.source === 'server' ? '' : M.state.source === 'db' ? '<div class="banner"><b>Önizleme modu.</b> Kaydet’e basınca değişiklikler önizlemedeki siteye ve menüye yazılır. Kendi sunucunuza kurduğunuzda aynı mantıkla çalışır.</div>' : '<div class="banner"><b>Önizleme modu.</b> Değişiklikler yalnızca bu tarayıcıda saklanır. Kendi sunucunuza kurduğunuzda herkes aynı güncel menüyü görür.</div>';
+    $('view').innerHTML = banner + RENDER[tab]();
+    $('modalRoot').innerHTML = DRAFT ? productModal() : '';
+    $('sLogo').src = D.settings.logo || 'assets/img/logo-mark.jpg'; $('sName').textContent = D.settings.siteName;
+    document.title = 'Yönetim Paneli | ' + D.settings.siteName;
+    if (tab === 'qr') drawQr();
+    if (keepScroll !== false) window.scrollTo(0, y);
+  }
+  function rerenderModal() { var m = document.querySelector('.modal'); var top = m ? m.scrollTop : 0; $('modalRoot').innerHTML = DRAFT ? productModal() : ''; var m2 = document.querySelector('.modal'); if (m2) m2.scrollTop = top; }
+
+  /* ---------- Olaylar ---------- */
+  document.addEventListener('input', function (e) {
+    var el = e.target, p = el.getAttribute && el.getAttribute('data-path');
+    if (!p) return;
+    var v;
+    if (el.type === 'checkbox') v = el.checked;
+    else if (el.hasAttribute('data-num')) v = M.num(el.value);
+    else v = el.value;
+    if (/^settings\.colors\./.test(p) && el.type === 'text' && !/^#[0-9a-fA-F]{6}$/.test(el.value)) return;
+    if (/\.hasSizes$/.test(p)) { toggleSizes(p, v); return; }
+    setv(p, v);
+    if (/^settings\.colors\./.test(p)) [].forEach.call(document.querySelectorAll('[data-path="' + p + '"]'), function (o) { if (o !== el) o.value = v; });
+    if (p.indexOf('settings.') === 0 && /colors|fontPreset/.test(p)) M.applyTheme(D.settings);
+    if (p === 'settings.slogan') { var sc = document.querySelector('.brandpv .script'); if (sc) sc.textContent = v; }
+    if (/^draft\.(sale|saleSingle|prices|single)/.test(p) && $('salePv')) {
+      var cat0 = catOf(DRAFT.cat), hs = cat0 && cat0.sizes && cat0.sizes.length, pairs = (DRAFT.mode === 'single' || !hs) ? [[DRAFT.single, DRAFT.saleSingle]] : cat0.sizes.map(function (z) { return [(DRAFT.prices || {})[z.k], (DRAFT.sale || {})[z.k]]; });
+      $('salePv').innerHTML = pairs.filter(function (x) { return x[0] != null && x[1] != null && x[1] < x[0]; }).map(function (x) { return '<span><s>' + M.fmt(x[0]) + '</s> <b>' + M.fmt(x[1]) + '</b></span>'; }).join('');
+    }
+    if (el.hasAttribute('data-rerender')) { if (DRAFT) { if (p === 'draft.cat') fixDraftForCat(); rerenderModal(); } else render(); }
+    if (p.indexOf('draft.') !== 0) commit();
+    if (p === 'settings.menuUrl') drawQr();
+  });
+
+  function toggleSizes(p, on) {
+    var i = +p.split('.')[1], c = D.categories[i];
+    if (on) { c.sizes = M.clone(M.SIZES); }
+    else {
+      c.sizes = [];
+      D.products.forEach(function (x) {
+        if (x.cat === c.id && x.mode === 'sizes') { var k = ['m', 's', 'l'].filter(function (k) { return x.prices[k] != null; })[0]; x.single = k ? x.prices[k] : null; x.mode = 'single'; }
+      });
+    }
+    commit(); render();
+  }
+  function fixDraftForCat() {
+    var c = catOf(DRAFT.cat); if (!(c.sizes && c.sizes.length)) DRAFT.mode = 'single';
+  }
+
+  document.addEventListener('change', function (e) {
+    var el = e.target;
+    if (el.hasAttribute && el.hasAttribute('data-campprod')) {
+      var c = D.campaigns[+el.getAttribute('data-campprod')], id = el.value; c.productIds = c.productIds || [];
+      var ix = c.productIds.indexOf(id);
+      if (el.checked && ix < 0) c.productIds.push(id); if (!el.checked && ix >= 0) c.productIds.splice(ix, 1);
+      commit(); return;
+    }
+    if (el.hasAttribute && el.hasAttribute('data-upload') && el.files && el.files[0]) {
+      var path = el.getAttribute('data-upload'), mx = +el.getAttribute('data-max') || 1000;
+      setStatus('Görsel yükleniyor…');
+      M.uploadImage(el.files[0], mx).then(function (url) {
+        setv(path, url);
+        if (path.indexOf('draft.') === 0) rerenderModal(); else { commit(); render(); }
+        setStatus(path.indexOf('draft.') === 0 ? '' : 'Kaydediliyor…');
+      }).catch(function (er) { setStatus('Yüklenemedi', 'bad'); toast(er.message || 'Görsel yüklenemedi.'); });
+      return;
+    }
+    if (el.hasAttribute && el.hasAttribute('data-gal') && el.files) {
+      var files = [].slice.call(el.files); setStatus('Görseller yükleniyor…');
+      files.reduce(function (pr, f) { return pr.then(function () { return M.uploadImage(f, 1000).then(function (u) { D.about.gallery.push({ src: u, alt: '' }); }); }); }, Promise.resolve())
+        .then(function () { commit(); render(); }).catch(function (er) { setStatus('Yüklenemedi', 'bad'); toast(er.message); });
+      return;
+    }
+    if (el.hasAttribute && el.hasAttribute('data-import') && el.files[0]) {
+      var fr = new FileReader();
+      fr.onload = function () {
+        try {
+          var j = JSON.parse(fr.result);
+          if (!j || !Array.isArray(j.products) || !Array.isArray(j.categories)) throw new Error('Bu dosya bir Major Döner yedeği değil.');
+          D = M.merge(M.DEFAULTS, j); M.applyTheme(D.settings); commit(); render(); toast('Yedek yüklendi.');
+        } catch (er) { $('impErr').textContent = er.message || 'Dosya okunamadı.'; }
+      };
+      fr.readAsText(el.files[0]);
+    }
+  });
+
+  function move(arr, i, d) { var j = i + d; if (j < 0 || j >= arr.length) return; var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+  function moveProd(id, d) {
+    var p = prodOf(id), same = D.products.filter(function (x) { return x.cat === p.cat; }), i = same.indexOf(p), n = same[i + d];
+    if (!n) return;
+    var a = D.products.indexOf(p), b = D.products.indexOf(n); D.products[a] = n; D.products[b] = p;
+  }
+  function uniqueId(base) { var id = M.slug(base), n = 2, b = id; while (prodOf(id) || catOf(id)) id = b + '-' + (n++); return id; }
+
+  function validateDraft() {
+    var d = DRAFT, c = catOf(d.cat), hasS = c.sizes && c.sizes.length, err = '';
+    if (!String(d.name || '').trim()) err = 'Ürün adı boş olamaz.';
+    else if (d.mode === 'single' || !hasS) { if (d.single == null) err = 'Fiyat girin.'; else if (d.onSale && (d.saleSingle == null || d.saleSingle >= d.single)) err = 'Kampanyalı fiyat, normal fiyattan düşük olmalı.'; }
+    else {
+      var ks = c.sizes.map(function (s) { return s.k; }).filter(function (k) { return d.prices[k] != null; });
+      if (!ks.length) err = 'En az bir boy için fiyat girin.';
+      else if (d.onSale) ks.forEach(function (k) { if (d.sale[k] != null && d.sale[k] >= d.prices[k]) err = 'Kampanyalı fiyatlar normal fiyattan düşük olmalı.'; });
+      if (!err && d.onSale && !ks.some(function (k) { return d.sale[k] != null; })) err = 'Kampanyalı fiyat girin.';
+    }
+    return err;
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('[data-tab],[data-act]'); if (!t) return;
+    if (t.hasAttribute('data-tab')) { tab = t.getAttribute('data-tab'); DRAFT = null; render(false); window.scrollTo(0, 0); return; }
+    var a = t.getAttribute('data-act'), id = t.getAttribute('data-id'), i = +t.getAttribute('data-i'), key = t.getAttribute('data-key');
+    var needsAsk = /-del$|reset-all$|^bulk$/.test(a);
+    if (a === 'bulk' ) { if (!ask('bulk')) { render(); return; } bulk(); return; }
+    if (needsAsk && key && !ask(key)) { render(); return; }
+
+    switch (a) {
+      case 'clear-img': setv(t.getAttribute('data-path'), ''); if (t.getAttribute('data-path').indexOf('draft.') === 0) rerenderModal(); else { commit(); render(); } return;
+      case 'reset-colors': D.settings.colors = M.clone(M.DEFAULTS.settings.colors); M.applyTheme(D.settings); commit(); render(); return;
+      case 'cat-pick': catSel = id; render(); return;
+      case 'cat-add': var nid = uniqueId('kategori'); D.categories.push({ id: nid, name: 'Yeni kategori', note: '', sizes: [], visible: true }); catSel = nid; commit(); render(); toast('Kategori eklendi. Adını yukarıdan düzenleyin.'); return;
+      case 'cat-up': move(D.categories, i, -1); commit(); render(); return;
+      case 'cat-down': move(D.categories, i, 1); commit(); render(); return;
+      case 'cat-del': var cid = D.categories[i].id; D.products = D.products.filter(function (p) { return p.cat !== cid; }); D.categories.splice(i, 1); D.campaigns.forEach(function (c) { c.productIds = (c.productIds || []).filter(prodOf); }); if (catSel === cid) catSel = null; commit(); render(); return;
+      case 'prod-add':
+        var cat = catOf(catSel), hasS = cat.sizes && cat.sizes.length;
+        DRAFT = { id: '', cat: catSel, name: '', desc: '', mode: hasS ? 'sizes' : 'single', prices: { s: null, m: null, l: null }, single: null, sale: { s: null, m: null, l: null }, saleSingle: null, onSale: false, badge: '', img: '', kind: hasS ? 'wrap' : 'salad', soldOut: false, visible: true };
+        DRAFT_NEW = true; rerenderModal(); return;
+      case 'prod-edit': DRAFT = M.clone(prodOf(id)); DRAFT_NEW = false; rerenderModal(); return;
+      case 'modal-close': DRAFT = null; rerenderModal(); return;
+      case 'prod-save':
+        var err = validateDraft(); if (err) { $('pErr').textContent = err; return; }
+        DRAFT.name = DRAFT.name.trim();
+        if (DRAFT_NEW) { DRAFT.id = uniqueId(DRAFT.name); D.products.push(DRAFT); catSel = DRAFT.cat; }
+        else { var ix = D.products.indexOf(prodOf(DRAFT.id)); D.products[ix] = DRAFT; catSel = DRAFT.cat; }
+        DRAFT = null; commit(); render(); toast('Ürün listeye eklendi. Siteye yazmak için alttaki Kaydet’e basın.'); return;
+      case 'prod-up': moveProd(id, -1); commit(); render(); return;
+      case 'prod-down': moveProd(id, 1); commit(); render(); return;
+      case 'prod-copy': var src = prodOf(id), cp = M.clone(src); cp.name = src.name + ' (kopya)'; cp.id = uniqueId(cp.name); D.products.splice(D.products.indexOf(src) + 1, 0, cp); commit(); render(); toast('Kopyalandı.'); return;
+      case 'prod-del': var pid = id; D.products = D.products.filter(function (p) { return p.id !== pid; }); D.campaigns.forEach(function (c) { c.productIds = (c.productIds || []).filter(function (x) { return x !== pid; }); }); commit(); render(); return;
+      case 'camp-add': var c = { id: M.uid('k'), title: 'Yeni kampanya', description: '', type: 'percent', value: 10, badge: '%10 indirim', image: '', price: null, oldPrice: null, productIds: [], start: '', end: '', active: false }; D.campaigns.unshift(c); campEdit = c.id; commit(); render(); return;
+      case 'camp-toggle': campEdit = campEdit === id ? null : id; render(); return;
+      case 'camp-del': D.campaigns.splice(i, 1); commit(); render(); return;
+      case 'mq-add': D.content.marquee.push(''); commit(); render(); return;
+      case 'mq-del': D.content.marquee.splice(i, 1); commit(); render(); return;
+      case 'step-add': D.content.steps.items.push({ t: '', d: '' }); commit(); render(); return;
+      case 'step-del': D.content.steps.items.splice(i, 1); commit(); render(); return;
+      case 'step-up': move(D.content.steps.items, i, -1); commit(); render(); return;
+      case 'step-down': move(D.content.steps.items, i, 1); commit(); render(); return;
+      case 'feat-add': D.about.features.push({ t: '', d: '' }); commit(); render(); return;
+      case 'feat-del': D.about.features.splice(i, 1); commit(); render(); return;
+      case 'gal-up': move(D.about.gallery, i, -1); commit(); render(); return;
+      case 'gal-down': move(D.about.gallery, i, 1); commit(); render(); return;
+      case 'gal-del': D.about.gallery.splice(i, 1); commit(); render(); return;
+      case 'hour-add': D.contact.hours.push({ d: '', h: '' }); commit(); render(); return;
+      case 'hour-del': D.contact.hours.splice(i, 1); commit(); render(); return;
+      case 'qr-dl': var cv = $('qrCanvas'); cv.toBlob(function (b) { var u = URL.createObjectURL(b), l = document.createElement('a'); l.href = u; l.download = 'major-doner-menu-qr.png'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 3000); toast('PNG hazırlandı.'); }); return;
+      case 'qr-copy': copy(D.settings.menuUrl, 'Adres kopyalandı.'); return;
+      case 'export': var blob = new Blob([JSON.stringify(D, null, 2)], { type: 'application/json' }), url = URL.createObjectURL(blob), al = document.createElement('a'); al.href = url; al.download = 'major-doner-yedek-' + M.today() + '.json'; document.body.appendChild(al); al.click(); al.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 3000); toast('Yedek hazırlandı.'); return;
+      case 'export-copy': copy(JSON.stringify(D), 'Yedek panoya kopyalandı.'); return;
+      case 'pw-change': pwChange(); return;
+      case 'reset-all': D = M.clone(M.DEFAULTS); M.resetLocal(); M.applyTheme(D.settings); commit(); render(); toast('Başlangıç verisi yüklendi.'); return;
+    }
+  });
+
+  function copy(text, msg) {
+    function fallback() { var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast(msg); } catch (e) { toast('Kopyalanamadı.'); } ta.remove(); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast(msg); }, fallback); else fallback();
+  }
+
+  function bulk() {
+    var cat = $('bulkCat').value, pct = M.num($('bulkPct').value), step = +$('bulkRound').value;
+    if (pct == null || pct === 0) { toast('Yüzde girin.'); return; }
+    function adj(v) { if (v == null) return v; var r = Math.round(v * (1 + pct / 100) / step) * step; return Math.max(step, r); }
+    var n = 0;
+    D.products.forEach(function (p) {
+      if (cat !== '*' && p.cat !== cat) return;
+      if (p.single != null) p.single = adj(p.single);
+      ['s', 'm', 'l'].forEach(function (k) { if (p.prices[k] != null) p.prices[k] = adj(p.prices[k]); });
+      if (p.onSale) { p.onSale = false; }  // eski kampanyalı fiyat yeni fiyattan yüksek kalabilir
+      n++;
+    });
+    commit(); render(); toast(n + ' ürünün fiyatı güncellendi. Elle girilen kampanyalı fiyatlar kapatıldı, gerekirse yeniden açın.');
+  }
+
+  function pwChange() {
+    var o = $('pwOld').value, n = $('pwNew').value;
+    if (n.length < 6) { $('pwErr').textContent = 'Yeni şifre en az 6 karakter olmalı.'; return; }
+    fetch('api/password', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + M.getToken() }, body: JSON.stringify({ old: o, next: n }) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Değiştirilemedi.'); }); })
+      .then(function () { $('pwErr').textContent = ''; $('pwOld').value = ''; $('pwNew').value = ''; toast('Şifre değiştirildi.'); })
+      .catch(function (e) { $('pwErr').textContent = e.message; });
+  }
+
+  /* ---------- Giriş ---------- */
+  function showLogin(msg) {
+    $('shell').hidden = true; $('login').hidden = false; $('loginErr').textContent = msg || '';
+    $('loginHint').textContent = M.state.source === 'server' ? '' : 'Önizleme şifresi: Major 123';
+    setTimeout(function () { $('pw').focus(); }, 0);
+  }
+  function enter() { $('login').hidden = true; $('shell').hidden = false; setStatus(''); dirty = false; paintBar(); M.applyTheme(D.settings); render(false); }
+
+  $('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var pw = $('pw').value;
+    if (M.state.source === 'server') {
+      fetch('api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) })
+        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Giriş yapılamadı.'); return j; }); })
+        .then(function (j) { M.setToken(j.token); $('pw').value = ''; enter(); })
+        .catch(function (er) { $('loginErr').textContent = er.message; });
+    } else {
+      // Önizleme: "Major 123", "Major123" ve "major123" kabul edilir.
+      if (pw.replace(/\s+/g, '').toLowerCase() === 'major123') { M.setToken('preview'); $('pw').value = ''; enter(); }
+      else $('loginErr').textContent = 'Şifre yanlış. Tekrar deneyin.';
+    }
+  });
+  $('saveBtn').addEventListener('click', saveNow);
+  $('logout').addEventListener('click', function () { M.setToken(null); D = null; location.reload(); });
+
+  M.load().then(function (d) {
+    D = d;
+    if (M.getToken()) enter(); else showLogin('');
+  });
+})();
+</script>
+</body>
+</html>

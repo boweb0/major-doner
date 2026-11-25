@@ -1,0 +1,10 @@
+{
+  "name": "major-doner",
+  "version": "1.0.0",
+  "description": "Major Döner tanıtım sitesi, QR menü ve yönetim paneli",
+  "private": true,
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}

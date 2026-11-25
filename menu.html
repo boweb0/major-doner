@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e0d0b">
+<title>Menü | Major Döner</title>
+<meta name="description" content="Major Döner menüsü: dürümler, menüler, servisler ve içecekler. WhatsApp'tan sipariş verin.">
+<link rel="icon" href="assets/img/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/base.css">
+<style>
+  /* Menü sayfası: menü kahraman. Hızlı açılır, tek sayfa, arama + yapışkan kategoriler + sepet.
+     Hareket yalnızca dokunuşa cevap verir: boy seçimi, sepete ekleme, sepet çekmecesi. */
+  body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  .wrap { max-width: 1040px; }
+  body.lock { overflow: hidden; }
+
+  .mtop { display: flex; align-items: center; gap: 10px; padding-block: 12px; padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+  .mtop .back { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); color: var(--text); text-decoration: none; flex: none; transition: background .15s; }
+  .mtop .back:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+  .mtop { position: relative; z-index: 3; }
+  .mtop .brand img { width: 40px; height: 40px; }
+  .mtop .brand .wm { font-size: 1.02rem; }
+  .mtop .acts { margin-left: auto; display: flex; gap: 8px; }
+  .mtop .acts a { width: 44px; height: 44px; padding: 0; }
+
+  .mhero { position: relative; isolation: isolate; padding-block: 18px 22px; }
+  .mhero::before { content: ""; position: absolute; inset: -40px 0 0; z-index: -1; background: radial-gradient(60% 90% at 20% 0%, color-mix(in srgb, var(--accent2) 20%, transparent), transparent 70%); }
+  .mhero .script { font: 400 clamp(2.2rem, 8vw, 3.2rem)/1 var(--f-script); color: var(--accent2); transform: rotate(-2deg); transform-origin: left; display: inline-block; }
+  .mhero h1 { font: 400 clamp(2.1rem, 8vw, 3.4rem)/1 var(--f-poster); text-transform: uppercase; margin-top: 8px; }
+  .mhero p { color: var(--muted); font-size: 1rem; margin-top: 8px; max-width: 48ch; }
+  .search { position: relative; margin-top: 18px; max-width: 520px; }
+  .search .ic { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  .search input { width: 100%; min-height: 52px; padding: 0 46px 0 46px; border-radius: 999px; border: 1.5px solid var(--line); background: color-mix(in srgb, var(--surface) 90%, var(--bg)); color: var(--text); font: 500 1.05rem var(--f-body); }
+  .search input::placeholder { color: var(--muted); }
+  .search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .search .clr { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 0; background: transparent; color: var(--muted); cursor: pointer; display: none; place-items: center; }
+  .search.has .clr { display: grid; }
+
+  /* Kampanya vitrini */
+  .vitrin { padding-block: 6px 6px; }
+  .vitrin h2 { font: 400 1.5rem/1 var(--f-poster); text-transform: uppercase; margin-bottom: 12px; color: var(--accent2); }
+  .vtrack { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: calc(var(--gutter) * -1) calc(var(--gutter-r) * -1); padding: 4px var(--gutter-r) 14px var(--gutter); scrollbar-width: none; }
+  .vtrack::-webkit-scrollbar { display: none; }
+  .camp { flex: 0 0 min(84%, 380px); scroll-snap-align: start; position: relative; padding: 20px 20px 18px; border-radius: 18px; background: linear-gradient(135deg, var(--accent2), color-mix(in srgb, var(--accent2) 60%, #7a2d00)); color: var(--ink); overflow: hidden; }
+  .camp::after { content: ""; position: absolute; right: -30px; top: -30px; width: 130px; height: 130px; border-radius: 50%; border: 18px solid rgba(23,19,11,.12); }
+  .camp .bd { display: inline-block; font: 700 .95rem/1 var(--f-cond); letter-spacing: .03em; background: var(--ink); color: var(--accent2); padding: 5px 10px; border-radius: 6px; }
+  .camp h3 { font: 400 1.5rem/1.1 var(--f-poster); margin-top: 10px; }
+  .camp p { margin-top: 6px; font-weight: 500; }
+  .camp .cim { margin: -20px -20px 14px; aspect-ratio: 16/9; background: rgba(23,19,11,.18); overflow: hidden; }
+  .camp .cim img { width: 100%; height: 100%; object-fit: cover; }
+  .camp .cpr { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; font-variant-numeric: tabular-nums; position: relative; z-index: 1; }
+  .camp .cpr strong { font: 400 2rem/1 var(--f-poster); }
+  .camp .cpr s { font: 600 1.2rem var(--f-cond); opacity: .7; }
+  .camp .cact { display: flex; gap: 8px; margin-top: 12px; position: relative; z-index: 1; }
+  .camp .cact .btn { min-height: 44px; padding: 0 16px; background: var(--ink); color: var(--accent2); border: 0; }
+  .camp .cact .btn.wa { background: #25d366; color: #052b12; }
+  .camp .until { font: 600 .95rem var(--f-cond); margin-top: 8px; opacity: .8; }
+  .camp .links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; position: relative; z-index: 1; }
+  .camp .links a { font: 700 .98rem var(--f-cond); padding: 6px 12px; border-radius: 999px; background: rgba(23,19,11,.88); color: var(--accent2); text-decoration: none; }
+
+  /* Kategori çipleri */
+  .chips { position: sticky; top: 0; z-index: 25; background: color-mix(in srgb, var(--bg) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-block: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+  .chips ul { list-style: none; margin: 0 auto; padding: 10px var(--gutter-r) 10px var(--gutter); display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; max-width: 1040px; }
+  .chips ul::-webkit-scrollbar { display: none; }
+  .chips a { white-space: nowrap; padding: 0 16px 0 10px; border-radius: 999px; border: 1.5px solid var(--line); text-decoration: none; font: 700 1.08rem/1 var(--f-cond); letter-spacing: .02em; color: var(--muted); min-height: 44px; display: flex; align-items: center; gap: 8px; transition: background .2s, color .2s, border-color .2s; }
+  .chips a svg { width: 26px; height: 26px; }
+  .chips a[aria-current="true"] { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+  .chips a:focus-visible { outline: 3px solid var(--accent2); outline-offset: 2px; }
+
+  section.cat { padding-top: 38px; scroll-margin-top: 64px; }
+  .cat-head { display: flex; flex-wrap: wrap; align-items: end; gap: 6px 16px; margin-bottom: 14px; }
+  .brush { display: inline-block; margin: 0; padding: 8px 28px 9px 20px; background: var(--accent2); color: var(--ink); font: var(--f-display-w) 1.6rem/1.1 var(--f-display); letter-spacing: .02em; transform: rotate(-1.5deg);
+    clip-path: polygon(0 14%, 2% 2%, 55% 0, 100% 8%, 98% 34%, 100% 70%, 96% 100%, 40% 96%, 3% 100%, 0 76%); }
+  .cat-note { color: var(--muted); font-size: .98rem; padding-bottom: 4px; }
+  .grid { display: grid; gap: 12px; }
+
+  /* Ürün kartı */
+  .card { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 4px 14px; padding: 14px; border-radius: 18px; border: 1px solid var(--line);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 92%, var(--text)), var(--surface)); scroll-margin-top: 130px; transition: border-color .2s, transform .2s, box-shadow .2s; }
+  @media (hover: hover) { .card:hover { border-color: color-mix(in srgb, var(--accent) 55%, transparent); transform: translateY(-2px); box-shadow: 0 16px 30px -18px rgba(0,0,0,.8); } }
+  .card.flash { animation: flash 1.6s ease; }
+  @keyframes flash { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 25% { box-shadow: 0 0 0 4px var(--accent2); } }
+  .thumb { grid-row: span 1; width: 92px; height: 92px; border-radius: 14px; overflow: hidden; background: radial-gradient(closest-side, color-mix(in srgb, var(--accent2) 22%, var(--surface)), color-mix(in srgb, var(--accent) 8%, var(--bg))); border: 1px solid var(--line); display: grid; place-items: center; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .thumb svg { width: 74%; height: 74%; }
+  .txt { min-width: 0; align-self: center; }
+  .card h3 { font: 700 1.4rem/1.1 var(--f-cond); letter-spacing: .01em; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+  .tag { font: 700 .86rem/1 var(--f-cond); letter-spacing: .03em; padding: 4px 9px; border-radius: 5px; background: var(--accent2); color: var(--ink); }
+  .tag.out { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .desc { color: var(--muted); font-size: .98rem; line-height: 1.4; margin-top: 5px; }
+  .pricing { grid-column: 1 / -1; margin-top: 10px; }
+  .sizes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .size { all: unset; box-sizing: border-box; cursor: pointer; text-align: center; padding: 9px 4px 10px; border-radius: 12px; border: 1.5px solid var(--line); display: grid; gap: 2px; min-height: 66px; align-content: center; position: relative; transition: border-color .15s, background .15s, transform .12s; }
+  .size:active { transform: scale(.96); }
+  .size small { font: 500 .88rem/1.1 var(--f-cond); color: var(--muted); letter-spacing: .02em; }
+  .size strong { font: 700 1.38rem/1.05 var(--f-cond); font-variant-numeric: tabular-nums; }
+  .size s { font: 500 .85rem/1 var(--f-cond); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .size[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .size[aria-pressed="true"] strong { color: var(--accent); }
+  .size[aria-pressed="true"]::after { content: ""; position: absolute; top: 6px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .size:focus-visible { outline: 3px solid var(--accent2); outline-offset: 2px; }
+  .one { display: flex; align-items: baseline; gap: 10px; font-variant-numeric: tabular-nums; }
+  .one strong { font: 700 1.75rem/1 var(--f-cond); color: var(--accent); }
+  .one s { color: var(--muted); font: 500 1.1rem var(--f-cond); }
+  .actions { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) 48px 48px; gap: 8px; margin-top: 12px; }
+  .actions .btn { width: 100%; padding: 0; min-height: 48px; }
+  .actions .btn-wa { padding: 0 10px; font-size: 1.08rem; }
+  .actions .btn-wa span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .actions a.disabled { pointer-events: none; opacity: .4; }
+  .addbtn { position: relative; }
+  .addbtn .n { position: absolute; top: -7px; right: -7px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: var(--accent2); color: var(--ink); font: 700 .9rem/22px var(--f-cond); text-align: center; display: none; }
+  .addbtn.has .n { display: block; }
+  .addbtn.bump { animation: bump .45s ease; }
+  @keyframes bump { 40% { transform: scale(1.18); background: var(--accent); color: var(--ink); } }
+
+  .empty { padding: 60px 0; text-align: center; color: var(--muted); }
+  .empty b { display: block; color: var(--text); font: 700 1.4rem var(--f-cond); margin-bottom: 4px; }
+  .mfoot { margin: 46px auto 0; padding-top: 22px; border-top: 1px solid var(--line); color: var(--muted); font-size: .95rem; display: grid; gap: 14px; }
+  .mfoot .row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  /* Sepet çubuğu ve çekmecesi */
+  .cartbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; padding: 10px var(--gutter-r) calc(10px + env(safe-area-inset-bottom, 0px)) var(--gutter); transform: translateY(110%); transition: transform .35s cubic-bezier(.2,.8,.2,1); pointer-events: none; }
+  .cartbar.on { transform: none; pointer-events: auto; }
+  .cartbar button { all: unset; box-sizing: border-box; cursor: pointer; width: 100%; max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 0 20px 0 16px; border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 60%, #fff), var(--accent)); color: var(--ink); font: 700 1.2rem/1 var(--f-cond); box-shadow: 0 14px 34px -8px rgba(0,0,0,.8), 0 0 0 1px rgba(0,0,0,.2); }
+  .cartbar button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .cartbar .cnt { min-width: 30px; height: 30px; border-radius: 15px; background: var(--ink); color: var(--accent); display: grid; place-items: center; font-size: 1rem; padding: 0 7px; }
+  .cartbar .sum { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .shade { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.66); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .shade.on { opacity: 1; pointer-events: auto; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; max-height: 88vh; max-height: 88dvh; display: flex; flex-direction: column; background: var(--surface); border-radius: 24px 24px 0 0; border-top: 1px solid var(--line); transform: translateY(105%); transition: transform .38s cubic-bezier(.2,.8,.2,1); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .sheet.on { transform: none; }
+  .sheet-in { width: 100%; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; min-height: 0; flex: 1; }
+  .sheet header { display: flex; align-items: center; padding: 18px var(--gutter-r) 8px var(--gutter); gap: 10px; }
+  .sheet header h2 { font: 400 1.6rem/1 var(--f-poster); text-transform: uppercase; flex: 1; }
+  .sheet .x { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer; display: grid; place-items: center; }
+  .sheet .body { overflow-y: auto; padding: 4px var(--gutter-r) 10px var(--gutter); flex: 1; min-height: 0; }
+  .ln { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items: center; }
+  .ln b { display: block; font: 700 1.2rem/1.15 var(--f-cond); }
+  .ln small { display: block; color: var(--muted); font-size: .92rem; }
+  .ln .pr { font: 700 1.2rem var(--f-cond); font-variant-numeric: tabular-nums; text-align: right; }
+  .stp { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; }
+  .stp button { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--line); background: transparent; color: var(--text); cursor: pointer; display: grid; place-items: center; }
+  .stp button:active { transform: scale(.92); }
+  .stp output { min-width: 32px; text-align: center; font: 700 1.2rem var(--f-cond); }
+  .note label { display: block; font: 600 1rem var(--f-cond); color: var(--muted); margin: 16px 0 6px; }
+  .note textarea { width: 100%; min-height: 78px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--bg); color: var(--text); font: 400 1rem var(--f-body); resize: vertical; }
+  .note textarea:focus { outline: none; border-color: var(--accent); }
+  .sheet footer { padding: 12px var(--gutter-r) 16px var(--gutter); border-top: 1px solid var(--line); display: grid; gap: 10px; }
+  .tot { display: flex; justify-content: space-between; align-items: baseline; font: 700 1.35rem var(--f-cond); }
+  .tot output { font-size: 1.9rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .sheet .btn-wa { min-height: 56px; font-size: 1.2rem; }
+  .linkbtn { all: unset; cursor: pointer; text-align: center; color: var(--muted); font: 600 1rem var(--f-cond); padding: 6px; text-decoration: underline; text-underline-offset: 3px; }
+
+  @media (min-width: 720px) {
+    .grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+    .card { grid-template-columns: 110px minmax(0, 1fr); }
+    .thumb { width: 110px; height: 110px; }
+    .camp { flex-basis: 340px; }
+    .vtrack { margin: 0; padding: 4px 0 14px; }
+    .sheet { left: 50%; right: auto; width: 640px; transform: translate(-50%, 105%); border-radius: 24px; bottom: 24px; max-height: 80vh; }
+    .sheet.on { transform: translate(-50%, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .sheet, .cartbar, .shade { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mtop">
+    <a class="back" href="index.html" aria-label="Siteye dön"></a>
+    <a class="brand" href="index.html"><img id="brandLogo" src="assets/img/logo-mark.jpg" alt="" width="40" height="40"><span class="wm" id="brandName">MAJOR DÖNER</span></a>
+    <div class="acts">
+      <a class="btn btn-line" id="hCall" href="#" aria-label="Ara"></a>
+      <a class="btn btn-wa" id="hWa" href="#" target="_blank" rel="noopener" aria-label="WhatsApp"></a>
+    </div>
+  </div>
+  <div class="mhero">
+    <div class="script" id="slogan"></div>
+    <h1 id="mTitle">Menü</h1>
+    <p id="note"></p>
+    <div class="search" id="searchBox">
+      <span id="sIcon"></span>
+      <input type="search" id="q" placeholder="Menüde ara…" aria-label="Menüde ara" autocomplete="off" enterkeyhint="search">
+      <button type="button" class="clr" id="clr" aria-label="Aramayı temizle"></button>
+    </div>
+  </div>
+  <div class="vitrin" id="kampanyalar" hidden></div>
+</div>
+
+<nav class="chips" aria-label="Menü kategorileri"><ul id="chips"></ul></nav>
+
+<main class="wrap"><div id="menu"><div class="empty">Menü yükleniyor…</div></div>
+  <footer class="mfoot" id="mfoot"></footer>
+</main>
+
+<div class="cartbar" id="cartbar"><button type="button" id="openCart" aria-haspopup="dialog"><span class="cnt" id="cCnt">0</span><span>Sepetim</span><span class="sum" id="cSum"></span></button></div>
+<div class="shade" id="shade"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT" aria-hidden="true">
+  <div class="sheet-in">
+    <header><h2 id="sheetT">Sepetim</h2><button class="x" id="closeCart" type="button" aria-label="Kapat"></button></header>
+    <div class="body"><div id="lines"></div>
+      <div class="note"><label for="cNote">Siparişe not (isteğe bağlı)</label><textarea id="cNote" placeholder="Örn. soğansız olsun"></textarea></div></div>
+    <footer>
+      <div class="tot"><span>Toplam</span><output id="tTot"></output></div>
+      <a class="btn btn-wa" id="sendWa" href="#" target="_blank" rel="noopener"></a>
+      <button class="linkbtn" id="clearCart" type="button">Sepeti boşalt</button>
+    </footer>
+  </div>
+</div>
+
+<script src="assets/core.js"></script>
+<script>
+(function () {
+  var M = Major, $ = function (id) { return document.getElementById(id); };
+  var DATA, sel = {}, query = '', cart = [], CK = 'major_cart_v1';
+
+  function tr(s) { return String(s || '').toLocaleLowerCase('tr'); }
+  function prod(id) { return DATA.products.filter(function (p) { return p.id === id; })[0]; }
+  function campOf(id) { return M.activeCampaigns(DATA).filter(function (c) { return c.id === id; })[0]; }
+  function catOf(id) { return DATA.categories.filter(function (c) { return c.id === id; })[0]; }
+  function sizeInfo(cat, k) { return (cat.sizes || []).filter(function (s) { return s.k === k; })[0] || { label: '', sub: '' }; }
+  function availKeys(p) { return ['s', 'm', 'l'].filter(function (k) { return M.basePrice(p, k) != null; }); }
+  function sizeText(si) { return si.label + (si.sub ? ' ' + si.sub : ''); }
+
+  /* ---------- Sepet ---------- */
+  function loadCart() { try { cart = JSON.parse(sessionStorage.getItem(CK) || '[]'); } catch (e) { cart = []; } if (!Array.isArray(cart)) cart = []; }
+  function saveCart() { try { sessionStorage.setItem(CK, JSON.stringify(cart)); } catch (e) { } }
+  function lines() {
+    return cart.map(function (l) {
+      if (String(l.pid).indexOf('camp:') === 0) {
+        var k = campOf(l.pid.slice(5)); if (!k || k.price == null) return null;
+        return { l: l, p: { name: k.title }, label: '', unit: k.price, q: l.q };
+      }
+      var p = prod(l.pid); if (!p || !p.visible || p.soldOut) return null;
+      var cat = catOf(p.cat), single = p.mode === 'single';
+      if (!single && M.basePrice(p, l.size) == null) return null;
+      var pr = M.priceFor(p, single ? 'single' : l.size, DATA);
+      return { l: l, p: p, label: single ? '' : sizeText(sizeInfo(cat, l.size)), unit: pr.price, q: l.q };
+    }).filter(Boolean);
+  }
+  function total(ls) { return ls.reduce(function (a, x) { return a + x.unit * x.q; }, 0); }
+  function countOf(pid) { return cart.reduce(function (a, l) { return a + (l.pid === pid ? l.q : 0); }, 0); }
+  function addToCart(pid) {
+    var isC = String(pid).indexOf('camp:') === 0, p = isC ? null : prod(pid), size = isC ? 'camp' : (p.mode === 'single' ? 'single' : sel[pid]);
+    var f = cart.filter(function (l) { return l.pid === pid && l.size === size; })[0];
+    if (f) f.q = Math.min(30, f.q + 1); else cart.push({ pid: pid, size: size, q: 1 });
+    saveCart(); paintCart();
+  }
+  function cartMessage(ls) {
+    var c = DATA.contact, note = $('cNote').value.trim();
+    return c.waGreeting + 'sipariş vermek istiyorum:\n' + ls.map(function (x) {
+      return x.q + ' x ' + x.p.name + (x.label ? ' (' + x.label + ')' : '') + ' – ' + M.fmt(x.unit * x.q);
+    }).join('\n') + '\nToplam: ' + M.fmt(total(ls)) + (note ? '\nNot: ' + note : '');
+  }
+  function paintCart() {
+    var ls = lines(), n = ls.reduce(function (a, x) { return a + x.q; }, 0);
+    $('cartbar').classList.toggle('on', n > 0);
+    $('cCnt').textContent = n; $('cSum').textContent = M.fmt(total(ls));
+    [].forEach.call(document.querySelectorAll('.addbtn'), function (b) {
+      var c = countOf(b.getAttribute('data-add')); b.classList.toggle('has', c > 0); b.querySelector('.n').textContent = c;
+    });
+    if (!n && $('sheet').classList.contains('on')) closeSheet();
+    if ($('sheet').classList.contains('on')) paintSheet(ls);
+  }
+  function paintSheet(ls) {
+    ls = ls || lines();
+    $('lines').innerHTML = ls.map(function (x, i) {
+      return '<div class="ln"><div><b>' + M.esc(x.p.name) + '</b>' + (x.label ? '<small>' + M.esc(x.label) + '</small>' : '') +
+        '<div class="stp"><button type="button" data-q="-1" data-i="' + i + '" aria-label="Azalt">' + M.icon('minus', 18) + '</button><output aria-live="polite">' + x.q + '</output><button type="button" data-q="1" data-i="' + i + '" aria-label="Artır">' + M.icon('plus', 18) + '</button></div></div>' +
+        '<div class="pr">' + M.fmt(x.unit * x.q) + '</div></div>';
+    }).join('');
+    $('tTot').textContent = M.fmt(total(ls));
+    $('sendWa').href = M.waLink(DATA.contact.whatsapp || DATA.contact.phone, cartMessage(ls));
+  }
+  var lastFocus = null;
+  function openSheet() {
+    lastFocus = document.activeElement;
+    $('sheet').classList.add('on'); $('shade').classList.add('on'); $('sheet').setAttribute('aria-hidden', 'false'); document.body.classList.add('lock');
+    paintSheet(); setTimeout(function () { $('closeCart').focus(); }, 60);
+  }
+  function closeSheet() {
+    $('sheet').classList.remove('on'); $('shade').classList.remove('on'); $('sheet').setAttribute('aria-hidden', 'true'); document.body.classList.remove('lock');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  $('openCart').addEventListener('click', openSheet);
+  $('closeCart').addEventListener('click', closeSheet);
+  $('shade').addEventListener('click', closeSheet);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && $('sheet').classList.contains('on')) closeSheet(); });
+  $('cNote').addEventListener('input', function () { paintSheet(); });
+  $('clearCart').addEventListener('click', function () { cart = []; saveCart(); paintCart(); });
+  $('lines').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-q]'); if (!b) return;
+    var ls = lines(), x = ls[+b.getAttribute('data-i')]; if (!x) return;
+    x.l.q += +b.getAttribute('data-q');
+    if (x.l.q <= 0) cart.splice(cart.indexOf(x.l), 1); else if (x.l.q > 30) x.l.q = 30;
+    saveCart(); paintCart();
+  });
+
+  /* ---------- Menü ---------- */
+  function orderLink(p, cat, k) {
+    var c = DATA.contact, pr = M.priceFor(p, p.mode === 'single' ? 'single' : k, DATA);
+    var si = p.mode === 'single' ? null : sizeInfo(cat, k);
+    return M.waLink(c.whatsapp || c.phone, c.waGreeting + '1 adet ' + p.name + (si ? ' (' + sizeText(si) + ')' : '') + (pr.price != null ? ' – ' + M.fmt(pr.price) : '') + ' sipariş vermek istiyorum.');
+  }
+  function pricing(p, cat) {
+    if (p.mode === 'single') { var pr = M.priceFor(p, 'single', DATA); return '<div class="one">' + (pr.old ? '<s>' + M.fmt(pr.old) + '</s>' : '') + '<strong>' + M.fmt(pr.price) + '</strong></div>'; }
+    var keys = availKeys(p); if (!keys.length) return '';
+    if (!sel[p.id] || keys.indexOf(sel[p.id]) < 0) sel[p.id] = keys.indexOf('m') >= 0 ? 'm' : keys[0];
+    return '<div class="sizes" role="group" aria-label="' + M.esc(p.name) + ' boy seçimi">' + keys.map(function (k) {
+      var si = sizeInfo(cat, k), pr = M.priceFor(p, k, DATA);
+      return '<button type="button" class="size" data-pid="' + p.id + '" data-k="' + k + '" aria-pressed="' + (sel[p.id] === k) + '"><small>' + M.esc(si.label) + (si.sub ? ' · ' + M.esc(si.sub) : '') + '</small>' + (pr.old ? '<s>' + M.fmt(pr.old) + '</s>' : '') + '<strong>' + M.fmt(pr.price) + '</strong></button>';
+    }).join('') + '</div>';
+  }
+  function card(p, cat) {
+    var pr0 = M.priceFor(p, p.mode === 'single' ? 'single' : (availKeys(p)[0] || 's'), DATA), tags = '';
+    if (p.soldOut) tags += '<span class="tag out">Tükendi</span>';
+    else if (p.badge) tags += '<span class="tag">' + M.esc(p.badge) + '</span>';
+    else if (pr0.old && pr0.label) tags += '<span class="tag">' + M.esc(pr0.label) + '</span>';
+    var k = p.mode === 'single' ? 'single' : sel[p.id], h = '<article class="card" id="p-' + p.id + '">' +
+      '<div class="thumb">' + (p.img ? '<img src="' + M.esc(p.img) + '" alt="' + M.esc(p.name) + '" loading="lazy" decoding="async" width="110" height="110">' : M.art(p.kind)) + '</div>' +
+      '<div class="txt"><h3>' + M.esc(p.name) + '</h3>' + (tags ? '<div class="tags">' + tags + '</div>' : '') + (p.desc ? '<p class="desc">' + M.esc(p.desc) + '</p>' : '') + '</div>' +
+      '<div class="pricing">' + pricing(p, cat) + '</div>';
+    if (p.soldOut) return h + '<div class="actions" style="grid-template-columns:1fr"><a class="btn btn-wa disabled" aria-disabled="true"><span>Şu an yok</span></a></div></article>';
+    k = p.mode === 'single' ? 'single' : sel[p.id];
+    return h + '<div class="actions"><a class="btn btn-wa" data-wa="' + p.id + '" href="' + M.esc(orderLink(p, cat, k)) + '" target="_blank" rel="noopener">' + M.icon('wa') + '<span>Sipariş ver</span></a>' +
+      '<button type="button" class="btn btn-line addbtn" data-add="' + p.id + '" aria-label="' + M.esc(p.name) + ' sepete ekle">' + M.icon('bag') + '<span class="n">0</span></button>' +
+      '<a class="btn btn-line" href="' + M.telLink(DATA.contact.phone) + '" aria-label="Ara">' + M.icon('phone') + '</a></div></article>';
+  }
+  function dateTr(s) { try { var p = s.split('-'); return parseInt(p[2], 10) + ' ' + ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'][parseInt(p[1], 10) - 1]; } catch (e) { return s; } }
+
+  function renderVitrin() {
+    var d = DATA, camps = M.activeCampaigns(d), el = $('kampanyalar');
+    if (!camps.length || query) { el.hidden = true; el.innerHTML = ''; return; }
+    el.hidden = false;
+    el.innerHTML = '<h2>' + M.esc(d.content.campaigns.title || 'Kampanyalar') + '</h2><div class="vtrack">' + camps.map(function (c) {
+      var ps = (c.productIds || []).map(prod).filter(function (p) { return p && p.visible; }), hp = c.price != null;
+      var wa = M.waLink(d.contact.whatsapp || d.contact.phone, d.contact.waGreeting + '“' + c.title + '” kampanyasından sipariş vermek istiyorum' + (hp ? ' (' + M.fmt(c.price) + ').' : '.'));
+      return '<div class="camp">' + (c.image ? '<div class="cim"><img src="' + M.esc(c.image) + '" alt="' + M.esc(c.title) + '" loading="lazy"></div>' : '') +
+        (c.badge ? '<span class="bd">' + M.esc(c.badge) + '</span>' : '') + '<h3>' + M.esc(c.title) + '</h3>' + (c.description ? '<p>' + M.esc(c.description) + '</p>' : '') +
+        (hp ? '<div class="cpr">' + (c.oldPrice ? '<s>' + M.fmt(c.oldPrice) + '</s>' : '') + '<strong>' + M.fmt(c.price) + '</strong></div>' : '') +
+        (c.end ? '<p class="until">' + dateTr(c.end) + ' tarihine kadar</p>' : '') +
+        (hp ? '<div class="cact"><a class="btn wa" target="_blank" rel="noopener" href="' + M.esc(wa) + '">' + M.icon('wa', 18) + '<span>Sipariş ver</span></a><button type="button" class="btn addbtn" data-add="camp:' + M.esc(c.id) + '" aria-label="' + M.esc(c.title) + ' sepete ekle">' + M.icon('bag', 18) + '<span class="n">0</span></button></div>' : '') +
+        (ps.length ? '<div class="links">' + ps.map(function (p) { return '<a href="#p-' + p.id + '">' + M.esc(p.name) + '</a>'; }).join('') + '</div>' : '') + '</div>';
+    }).join('') + '</div>';
+  }
+
+  function render() {
+    var d = DATA, out = '', chips = '', q = tr(query.trim()), any = false;
+    renderVitrin();
+    d.categories.forEach(function (cat) {
+      if (!cat.visible) return;
+      var ps = d.products.filter(function (p) { return p.cat === cat.id && p.visible && (!q || tr(p.name + ' ' + p.desc + ' ' + cat.name).indexOf(q) >= 0); });
+      if (!ps.length) return; any = true;
+      var first = ps[0];
+      chips += '<li><a href="#c-' + cat.id + '">' + M.art(first.kind) + '<span>' + M.esc(cat.name) + '</span></a></li>';
+      out += '<section class="cat" id="c-' + cat.id + '"><div class="cat-head"><h2 class="brush">' + M.esc(cat.name) + '</h2>' + (cat.note && !q ? '<p class="cat-note">' + M.esc(cat.note) + '</p>' : '') + '</div><div class="grid">' + ps.map(function (p) { return card(p, cat); }).join('') + '</div></section>';
+    });
+    $('menu').innerHTML = any ? out : '<div class="empty"><b>Bulunamadı</b>“' + M.esc(query) + '” için sonuç yok. Başka bir kelime dene.</div>';
+    $('chips').innerHTML = chips;
+    paintCart(); spy();
+  }
+
+  var io;
+  function spy() {
+    if (io) io.disconnect();
+    var links = [].slice.call(document.querySelectorAll('#chips a'));
+    if (!('IntersectionObserver' in window) || !links.length) return;
+    function mark(id) {
+      links.forEach(function (a) {
+        var on = a.getAttribute('href') === '#' + id; a.setAttribute('aria-current', on ? 'true' : 'false');
+        if (on) { var ul = $('chips'); ul.scrollTo({ left: a.parentNode.offsetLeft - 24, behavior: 'smooth' }); }
+      });
+    }
+    io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) mark(e.target.id); }); }, { rootMargin: '-110px 0px -65% 0px' });
+    [].forEach.call(document.querySelectorAll('section.cat'), function (s) { io.observe(s); });
+    mark(document.querySelector('section.cat').id);
+  }
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.size');
+    if (b) {
+      var pid = b.getAttribute('data-pid'), k = b.getAttribute('data-k'); sel[pid] = k;
+      var item = b.closest('.card'), p = prod(pid), cat = catOf(p.cat);
+      [].forEach.call(item.querySelectorAll('.size'), function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      item.querySelector('[data-wa]').href = orderLink(p, cat, k); return;
+    }
+    var a = e.target.closest && e.target.closest('.addbtn');
+    if (a) {
+      addToCart(a.getAttribute('data-add'));
+      a.classList.remove('bump'); void a.offsetWidth; a.classList.add('bump'); return;
+    }
+    var lk = e.target.closest && e.target.closest('.camp .links a');
+    if (lk) {
+      var t = document.querySelector(lk.getAttribute('href'));
+      if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash'); }
+    }
+  });
+
+  var qt;
+  $('q').addEventListener('input', function () {
+    var v = this.value; $('searchBox').classList.toggle('has', !!v);
+    clearTimeout(qt); qt = setTimeout(function () { query = v; render(); }, 120);
+  });
+  $('clr').addEventListener('click', function () { $('q').value = ''; $('searchBox').classList.remove('has'); query = ''; render(); $('q').focus(); });
+
+  M.load().then(function (d) {
+    DATA = d; var s = d.settings, c = d.contact;
+    M.applyTheme(s);
+    document.title = 'Menü | ' + s.siteName;
+    $('brandName').textContent = s.siteName.toUpperCase();
+    $('brandLogo').src = s.logo || 'assets/img/logo-mark.jpg';
+    $('slogan').textContent = s.slogan;
+    $('mTitle').textContent = d.content.menuTitle; $('q').placeholder = d.content.searchPlaceholder; $('q').setAttribute('aria-label', d.content.searchPlaceholder);
+    M.bindLogoZoom('#brandLogo', function () { return s.heroImage || s.logo; });
+    $('note').textContent = s.menuNote || '';
+    document.querySelector('.back').innerHTML = M.icon('back', 22);
+    $('sIcon').innerHTML = M.icon('search', 20); $('clr').innerHTML = M.icon('x', 18); $('closeCart').innerHTML = M.icon('x', 20);
+    $('sendWa').innerHTML = M.icon('wa') + '<span>WhatsApp’tan gönder</span>';
+    var tel = M.telLink(c.phone);
+    $('hCall').href = tel; $('hCall').innerHTML = M.icon('phone');
+    $('hWa').href = M.waLink(c.whatsapp || c.phone, c.waGreeting + 'bilgi almak istiyorum.'); $('hWa').innerHTML = M.icon('wa');
+    loadCart(); render();
+    $('mfoot').innerHTML = '<div>' + M.esc(c.address || '') + '</div>' +
+      '<div class="row"><a class="btn btn-line btn-sm" href="' + tel + '">' + M.icon('phone', 18) + '<span>' + M.esc(M.prettyPhone(c.phone)) + '</span></a>' +
+      '<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="' + M.esc(M.mapsLink(c)) + '">' + M.icon('pin', 18) + '<span>Yol tarifi</span></a>' +
+      '<a class="btn btn-gold btn-sm" href="index.html">Siteye dön</a></div>';
+    if (location.hash && /^#[\w-]+$/.test(location.hash)) { var t = document.querySelector(location.hash); if (t) setTimeout(function () { t.scrollIntoView(); }, 60); }
+  });
+})();
+</script>
+</body>
+</html>
